@@ -776,6 +776,8 @@ MonoBehaviour:
   poleTopPoint: {fileID: 1172074790}
   poleMiddlePoint: {fileID: 80759748}
   poleBottomPoint: {fileID: 568427244}
+  pole: {fileID: 1853496712}
+  cart: {fileID: 1709343636}
   poleDebugLinePosition: {fileID: 1889508776}
 --- !u!120 &1535853173
 LineRenderer:
@@ -1209,6 +1211,7 @@ GameObject:
   - component: {fileID: 1853496709}
   - component: {fileID: 1853496707}
   - component: {fileID: 1853496711}
+  - component: {fileID: 1853496712}
   m_Layer: 0
   m_Name: Pole
   m_TagString: Untagged
@@ -1353,6 +1356,20 @@ CapsuleCollider2D:
   m_Offset: {x: 0, y: 0}
   m_Size: {x: 0.64, y: 2.56}
   m_Direction: 0
+--- !u!114 &1853496712
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1853496706}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 992995fb4f681494bb1cf89ff1045ae1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  isRotated: 1
+  rotaion: 0.5
 --- !u!1 &1889508775
 GameObject:
   m_ObjectHideFlags: 0

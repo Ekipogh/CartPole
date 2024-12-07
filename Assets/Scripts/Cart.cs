@@ -7,6 +7,7 @@ public class Cart : MonoBehaviour
     public InputActionAsset inputActions;
     public Rigidbody2D rb;
     private InputAction moveAction;
+    private Vector3 _initialPosition;
 
     public float speed = 15;
     // Start is called once before the first execution of Update after the MonoBehaviour is created
@@ -14,6 +15,7 @@ public class Cart : MonoBehaviour
     {
         var map = inputActions.FindActionMap("Player");
         moveAction = map.FindAction("Move");
+        _initialPosition = transform.position;
     }
 
     void OnEnable()
@@ -30,11 +32,18 @@ public class Cart : MonoBehaviour
     void Update()
     {
         var moveValue = moveAction.ReadValue<Vector2>();
-        Move(new Vector3(moveValue.x, 0));
+        if (moveValue.x != 0)
+            Move(new Vector3(moveValue.x, 0));
     }
 
     public void Move(Vector2 direction)
     {
         rb.linearVelocity = direction * speed;
+    }
+
+    public void Reset()
+    {
+        transform.position = _initialPosition;
+        rb.linearVelocity = Vector2.zero;
     }
 }
