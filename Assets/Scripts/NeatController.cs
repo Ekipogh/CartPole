@@ -27,15 +27,11 @@ public class NeatController : MonoBehaviour
     private const int _inputSize = 4;
     private const int _outputSize = 1;
 
-    // Population settings
-    private const int _populationSize = 100;
-    private const int _eliteSize = 10;
-    private const int _epochs = 100;
-
-    private Neat _bestSpecimen;
-    private List<Neat> _deadSpecimens = new List<Neat>();
-
-    private bool _isRunning = false;
+    // genetic algorithm settings
+    private List<Neat> _currentGeneration;
+    private const int _populationSize = 100; // number of specimens in the current generation
+    private int _currentSpecimenIndex = 0;
+    private bool _currentSpecimentIsDead = false;
 
     void Start()
     {
@@ -53,9 +49,12 @@ public class NeatController : MonoBehaviour
         _poleInitialRotation = pole.transform.rotation;
         _cartInitialPosition = cart.transform.position;
 
-        _randomBias = Random.Range(-1.0f, 1.0f);
-        // NEAT settings
-        _currentSpecimen = new Neat(_inputSize, _outputSize);
+        _currentGeneration = new List<Neat>();
+        for (int i = 0; i < _populationSize; i++)
+        {
+            _currentGeneration.Add(new Neat(_inputSize, _outputSize));
+        }
+        _currentSpecimen = _currentGeneration[_currentSpecimenIndex];
     }
 
     // Update is called once per frame
@@ -67,8 +66,25 @@ public class NeatController : MonoBehaviour
 
     private void ManageTraining()
     {
-        // todo: Implement training logic
+        if (_currentSpecimentIsDead)
+        {
+            _currentSpecimen.Dead();
+            Debug.Log("Specimen " + _currentSpecimenIndex + " died. Fitness: " + _currentSpecimen.Fitness);
+            _currentSpecimenIndex++;
+            if (_currentSpecimenIndex >= _populationSize)
+            {
+                _currentSpecimenIndex = 0;
+                _currentGeneration.Sort((a, b) => a.Fitness.CompareTo(b.Fitness));
+                _currentGeneration.Reverse();
+                // todo: evolve the generation
+            }
+            _currentSpecimen = _currentGeneration[_currentSpecimenIndex];
+            _currentSpecimen.Start();
+            _currentSpecimentIsDead = false;
+            ResetScene();
+        }
     }
+
 
     void NeatThink()
     {
@@ -89,8 +105,7 @@ public class NeatController : MonoBehaviour
         }
         else
         {
-            _deadSpecimens.Add(_currentSpecimen);
-            ResetScene();
+            _currentSpecimentIsDead = true;
         }
     }
     private void ResetScene()
@@ -105,7 +120,6 @@ public class NeatController : MonoBehaviour
     {
         if (poleTopPoint.position.y < poleMiddlePoint.position.y)
         {
-            Debug.Log("Pole has fallen below the initial position, marking specimen as dead");
             return true;
         }
         return false;
