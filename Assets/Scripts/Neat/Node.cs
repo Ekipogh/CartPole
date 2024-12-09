@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Unity.VisualScripting;
 
 public enum NodeType
 {
@@ -20,11 +21,17 @@ public class Node
 
     private readonly ActivationFunction _activationFunction;
 
-    public Node(NodeType type)
+    public Node(NodeType type, int id = -1)
     {
-        var sequencer = new Sequencer();
         Type = type;
-        Id = sequencer.GetNextNodeId();
+        if (id == -1)
+        {
+            Id = Sequencer.Instance.GetNextNodeId();
+        }
+        else
+        {
+            Id = id;
+        }
         Value = 0.0f;
 
         InConnections = new List<Connection>();
@@ -49,7 +56,11 @@ public class Node
     // 3. Sum the values of all incoming connections and save it the Value of the node
     public float CalculateValue()
     {
-        var sum = Value;
+        if (Type == NodeType.Input)
+        {
+            return Value;
+        }
+        var sum = 0.0f;
         foreach (var connection in InConnections)
         {
             if (connection.Enabled)
@@ -59,5 +70,39 @@ public class Node
         }
         Value = _activationFunction.Activate(sum);
         return Value;
+    }
+    public void AddInConnection(Connection connection)
+    {
+        var connectionId = connection.Id;
+        var exists = false;
+        foreach (var c in InConnections)
+        {
+            if (c.Id == connectionId)
+            {
+                exists = true;
+                break;
+            }
+        }
+        if (!exists)
+        {
+            InConnections.Add(connection);
+        }
+    }
+    public void AddOutConnection(Connection connection)
+    {
+        var connectionId = connection.Id;
+        var exists = false;
+        foreach (var c in OutConnections)
+        {
+            if (c.Id == connectionId)
+            {
+                exists = true;
+                break;
+            }
+        }
+        if (!exists)
+        {
+            OutConnections.Add(connection);
+        }
     }
 }

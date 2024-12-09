@@ -19,7 +19,7 @@ public class Sigmoid : ActivationFunction
 {
     public override float Activate(float x)
     {
-        return 1.0f / (1.0f + Mathf.Exp(-x));
+        return 2.0f / (1.0f + Mathf.Exp(-x)) - 1.0f;
     }
 }
 

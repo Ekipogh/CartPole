@@ -10,10 +10,16 @@ public class Connection
 
     public bool Enabled { get; set; }
 
-    public Connection(Node fromNode, Node toNode, float weight)
+    public Connection(Node fromNode, Node toNode, float weight, int id = -1)
     {
-        var sequencer = new Sequencer();
-        Id = sequencer.GetNextConnectionId();
+        if ( id == -1)
+        {
+            Id = Sequencer.Instance.GetNextConnectionId();
+        }
+        else
+        {
+            Id = id;
+        }
         FromNode = fromNode;
         ToNode = toNode;
         Weight = weight;

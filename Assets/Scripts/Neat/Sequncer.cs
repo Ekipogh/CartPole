@@ -1,11 +1,13 @@
+using System.Diagnostics;
+
 public class Sequencer
 {
     private int _nodeId = 0;
     private int _connectionId = 0;
 
-    private Sequencer _instance;
+    private static Sequencer _instance;
 
-    public Sequencer Instance
+    public static Sequencer Instance
     {
         get
         {

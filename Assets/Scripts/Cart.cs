@@ -9,6 +9,8 @@ public class Cart : MonoBehaviour
     private InputAction moveAction;
     private Vector3 _initialPosition;
 
+    public float moveAmount = 0;
+
     public float speed = 15;
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Awake()
@@ -45,5 +47,6 @@ public class Cart : MonoBehaviour
     {
         transform.position = _initialPosition;
         rb.linearVelocity = Vector2.zero;
+        moveAmount = 0;
     }
 }

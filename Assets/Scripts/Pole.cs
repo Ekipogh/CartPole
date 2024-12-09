@@ -7,6 +7,25 @@ public class Pole : MonoBehaviour
     private Vector3 _initialPosition;
     private Quaternion _initialRotation;
 
+    private float _verticalness = 0.0f; //how vertical the pole staid
+
+    public float Verticallness
+    {
+        get { return _verticalness; }
+    }
+
+    private bool _isFallen = false;
+
+    public void Fall()
+    {
+        _isFallen = true;
+    }
+
+    public bool IsFallen()
+    {
+        return _isFallen;
+    }
+
     [Range(0.0f, 5.0f)]
     public float rotaion = 0.0f;
     void Start()
@@ -19,6 +38,11 @@ public class Pole : MonoBehaviour
         _initialRotation = transform.rotation;
     }
 
+    void Update()
+    {
+        _verticalness += transform.rotation.eulerAngles.z;
+    }
+
 
     public void Reset()
     {
@@ -27,5 +51,7 @@ public class Pole : MonoBehaviour
         var rb = GetComponent<Rigidbody2D>();
         rb.linearVelocity = Vector2.zero;
         rb.angularVelocity = 0.0f;
+        _isFallen = false;
+        _verticalness = 0.0f;
     }
 }
