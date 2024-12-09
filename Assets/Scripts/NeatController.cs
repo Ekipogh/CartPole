@@ -24,13 +24,15 @@ public class NeatController : MonoBehaviour
 
     private float _randomBias;
 
-    private const int _inputSize = 5;
+    private const int _inputSize = 4;
     private const int _outputSize = 1;
 
     // genetic algorithm settings
     private List<Neat> _currentGeneration;
+
+    private const int _generations = 100;
     private int _currentGenerationIndex = 0;
-    private const int _populationSize = 30; // number of specimens in the current generation
+    private const int _populationSize = 100; // number of specimens in the current generation
     private int _currentSpecimenIndex = 0;
     private bool _currentSpecimenIsDead = false;
 
@@ -107,30 +109,38 @@ public class NeatController : MonoBehaviour
 
     private void ManageTraining()
     {
-        if (_currentSpecimenIsDead)
+        if (_currentGenerationIndex < _generations)
         {
-            var fitnessBonus = 0.0f;
-            const float nonMovedBonus = -2f;
-            if (cart.moveAmount < didntmoveDelta)
+            if (_currentSpecimenIsDead)
             {
-                fitnessBonus += nonMovedBonus;
+                var fitnessBonus = 0.0f;
+                const float nonMovedBonus = -2f;
+                if (cart.moveAmount < didntmoveDelta)
+                {
+                    fitnessBonus += nonMovedBonus;
+                }
+                _currentSpecimen.Dead(fitnessBonus);
+                Debug.Log("Specimen " + _currentSpecimenIndex + " died. Fitness: " + _currentSpecimen.Fitness);
+                _currentSpecimenIndex++;
+                if (_currentSpecimenIndex >= _populationSize)
+                {
+                    _currentGeneration.Sort((a, b) => a.Fitness.CompareTo(b.Fitness));
+                    _currentGeneration.Reverse();
+                    Statistics();
+                    _currentSpecimenIndex = 0;
+                    _currentGenerationIndex++;
+                    Evolution();
+                }
+                _currentSpecimen = _currentGeneration[_currentSpecimenIndex];
+                _currentSpecimen.Start();
+                _currentSpecimenIsDead = false;
+                ResetScene();
             }
-            _currentSpecimen.Dead(fitnessBonus);
-            Debug.Log("Specimen " + _currentSpecimenIndex + " died. Fitness: " + _currentSpecimen.Fitness);
-            _currentSpecimenIndex++;
-            if (_currentSpecimenIndex >= _populationSize)
-            {
-                _currentGeneration.Sort((a, b) => a.Fitness.CompareTo(b.Fitness));
-                _currentGeneration.Reverse();
-                Statistics();
-                _currentSpecimenIndex = 0;
-                _currentGenerationIndex++;
-                Evolution();
-            }
-            _currentSpecimen = _currentGeneration[_currentSpecimenIndex];
-            _currentSpecimen.Start();
-            _currentSpecimenIsDead = false;
-            ResetScene();
+        }
+        else
+        {
+            Debug.Log("Training finished");
+            _currentSpecimen = _currentGeneration[0];
         }
     }
 
@@ -139,16 +149,14 @@ public class NeatController : MonoBehaviour
         if (!CheckForDeath())
         {
             var inputs = new float[_inputSize];
-            // Calculate the height of the pole
-            inputs[0] = poleTopPoint.position.y - poleBottomPoint.position.y;
             // Calculate the angle of the pole relative to the vertical axis
-            inputs[1] = pole.transform.rotation.eulerAngles.z;
+            inputs[0] = pole.transform.rotation.eulerAngles.z;
             // Calculate the relative x position of the pole's bottom point to the cart
-            inputs[2] = poleBottomPoint.position.x - transform.position.x;
+            inputs[1] = poleBottomPoint.position.x - transform.position.x;
             // Cart x position
-            inputs[3] = cart.transform.position.x;
+            inputs[2] = cart.transform.position.x;
             // Include a random bias in the inputs
-            inputs[4] = _randomBias;
+            inputs[3] = _randomBias;
 
             var outputs = _currentSpecimen.Evaluate(inputs);
             cart.moveAmount += Mathf.Abs(outputs[0]);

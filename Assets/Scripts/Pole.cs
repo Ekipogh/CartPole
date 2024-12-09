@@ -5,7 +5,6 @@ public class Pole : MonoBehaviour
     public bool isRotated = false;
 
     private Vector3 _initialPosition;
-    private Quaternion _initialRotation;
 
     private float _verticalness = 0.0f; //how vertical the pole staid
 
@@ -32,10 +31,10 @@ public class Pole : MonoBehaviour
     {
         if (isRotated)
         {
-            transform.Rotate(0, 0, rotaion);
+            var randomRotation = Random.Range(-rotaion, rotaion);
+            transform.Rotate(0, 0, randomRotation);
         }
         _initialPosition = transform.position;
-        _initialRotation = transform.rotation;
     }
 
     void Update()
@@ -47,7 +46,12 @@ public class Pole : MonoBehaviour
     public void Reset()
     {
         transform.position = _initialPosition;
-        transform.rotation = _initialRotation;
+        transform.rotation = Quaternion.identity;
+        if (isRotated)
+        {
+            var randomRotation = Random.Range(-rotaion, rotaion);
+            transform.Rotate(0, 0, randomRotation);
+        }
         var rb = GetComponent<Rigidbody2D>();
         rb.linearVelocity = Vector2.zero;
         rb.angularVelocity = 0.0f;

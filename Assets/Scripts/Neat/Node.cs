@@ -111,4 +111,9 @@ public class Node
         var node = new Node(Type, Id);
         return node;
     }
+
+    public string Save()
+    {
+        return $"Node: {Id} {Type} {_activationFunction}";
+    }
 }

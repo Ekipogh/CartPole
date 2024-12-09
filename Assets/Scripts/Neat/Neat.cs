@@ -142,46 +142,46 @@ public class Neat
             var node2Copy = node2?.Copy();
             if (node1 != null && node2 != null)
             {
-            // they are the same, just add one of them
-            _nodeGenes.Add(node1Copy);
-            if (node1Copy.Type == NodeType.Input)
-            {
-                _inputNodes.Add(node1Copy);
-            }
-            else if (node1Copy.Type == NodeType.Output)
-            {
-                _outputNodes.Add(node1Copy);
-            }
-            }
-            else if (node1 != null)
-            {
-            if (parent1Fitness > parent2Fitness)
-            {
+                // they are the same, just add one of them
                 _nodeGenes.Add(node1Copy);
                 if (node1Copy.Type == NodeType.Input)
                 {
-                _inputNodes.Add(node1Copy);
+                    _inputNodes.Add(node1Copy);
                 }
                 else if (node1Copy.Type == NodeType.Output)
                 {
-                _outputNodes.Add(node1Copy);
+                    _outputNodes.Add(node1Copy);
                 }
             }
+            else if (node1 != null)
+            {
+                if (parent1Fitness > parent2Fitness)
+                {
+                    _nodeGenes.Add(node1Copy);
+                    if (node1Copy.Type == NodeType.Input)
+                    {
+                        _inputNodes.Add(node1Copy);
+                    }
+                    else if (node1Copy.Type == NodeType.Output)
+                    {
+                        _outputNodes.Add(node1Copy);
+                    }
+                }
             }
             else if (node2 != null)
             {
-            if (parent2Fitness > parent1Fitness)
-            {
-                _nodeGenes.Add(node2Copy);
-                if (node2Copy.Type == NodeType.Input)
+                if (parent2Fitness > parent1Fitness)
                 {
-                _inputNodes.Add(node2Copy);
+                    _nodeGenes.Add(node2Copy);
+                    if (node2Copy.Type == NodeType.Input)
+                    {
+                        _inputNodes.Add(node2Copy);
+                    }
+                    else if (node2Copy.Type == NodeType.Output)
+                    {
+                        _outputNodes.Add(node2Copy);
+                    }
                 }
-                else if (node2Copy.Type == NodeType.Output)
-                {
-                _outputNodes.Add(node2Copy);
-                }
-            }
             }
         }
     }
@@ -332,5 +332,19 @@ public class Neat
         _connectionGenes.Clear();
         _inputNodes.Clear();
         _outputNodes.Clear();
+    }
+
+    public void Save()
+    {
+        var saveString = "";
+        foreach (var node in _nodeGenes)
+        {
+            saveString += node.Save() + "\n";
+        }
+        foreach (var connection in _connectionGenes)
+        {
+            saveString += connection.Save() + "\n";
+        }
+        System.IO.File.WriteAllText("Assets/Save.txt", saveString);
     }
 }

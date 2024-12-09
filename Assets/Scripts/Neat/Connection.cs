@@ -38,4 +38,9 @@ public class Connection
         ToNode.AddInConnection(connection);
         return connection;
     }
+
+    public string Save()
+    {
+        return $"Connection: {FromNode.Id} {ToNode.Id} {Weight} {Enabled}";
+    }
 }
