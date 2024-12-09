@@ -32,7 +32,7 @@ public class NeatController : MonoBehaviour
     private int _currentGenerationIndex = 0;
     private const int _populationSize = 30; // number of specimens in the current generation
     private int _currentSpecimenIndex = 0;
-    private bool _currentSpecimentIsDead = false;
+    private bool _currentSpecimenIsDead = false;
 
     private const int _championSize = 10; // number of specimens that will be preserved in the next generation
     private const int _antichampionSize = 1; // number of worst specimens that will be saved in the next generation
@@ -68,24 +68,30 @@ public class NeatController : MonoBehaviour
             var outputNodes = new List<Node>();
             for (int j = 0; j < _inputSize; j++)
             {
-                var id = j;
-                inputNodes.Add(new Node(NodeType.Input, id));
+                inputNodes.Add(new Node(NodeType.Input));
             }
             for (int j = 0; j < _outputSize; j++)
             {
-                var id = j + _inputSize;
-                outputNodes.Add(new Node(NodeType.Output, id));
+                outputNodes.Add(new Node(NodeType.Output));
+            }
+            // reset the sequencer if it's not the last specimen
+            if (i < _populationSize - 1)
+            {
+                Sequencer.Instance.ResetNodeIds();
             }
             for (int j = 0; j < _inputSize; j++)
             {
                 for (int k = 0; k < _outputSize; k++)
                 {
-                    var id = j * _outputSize + k; // the connections with the same id considered to be the same connection
-                    var connection = new Connection(inputNodes[j], outputNodes[k], Random.Range(-1.0f, 1.0f), id);
+                    var connection = new Connection(inputNodes[j], outputNodes[k], Random.Range(-1.0f, 1.0f));
                     connections.Add(connection);
                     inputNodes[j].AddOutConnection(connection);
                     outputNodes[k].AddInConnection(connection);
                 }
+            }
+            if (i < _populationSize - 1)
+            {
+                Sequencer.Instance.ResetConnectionIds();
             }
             _currentGeneration.Add(new Neat(inputNodes, outputNodes, connections));
         }
@@ -101,10 +107,10 @@ public class NeatController : MonoBehaviour
 
     private void ManageTraining()
     {
-        if (_currentSpecimentIsDead)
+        if (_currentSpecimenIsDead)
         {
             var fitnessBonus = 0.0f;
-            const float nonMovedBonus = -1.5f;
+            const float nonMovedBonus = -2f;
             if (cart.moveAmount < didntmoveDelta)
             {
                 fitnessBonus += nonMovedBonus;
@@ -123,7 +129,7 @@ public class NeatController : MonoBehaviour
             }
             _currentSpecimen = _currentGeneration[_currentSpecimenIndex];
             _currentSpecimen.Start();
-            _currentSpecimentIsDead = false;
+            _currentSpecimenIsDead = false;
             ResetScene();
         }
     }
@@ -142,7 +148,7 @@ public class NeatController : MonoBehaviour
             // Cart x position
             inputs[3] = cart.transform.position.x;
             // Include a random bias in the inputs
-            inputs[3] = _randomBias;
+            inputs[4] = _randomBias;
 
             var outputs = _currentSpecimen.Evaluate(inputs);
             cart.moveAmount += Mathf.Abs(outputs[0]);
@@ -150,7 +156,7 @@ public class NeatController : MonoBehaviour
         }
         else
         {
-            _currentSpecimentIsDead = true;
+            _currentSpecimenIsDead = true;
         }
     }
     private void ResetScene()
@@ -159,7 +165,6 @@ public class NeatController : MonoBehaviour
         pole.Reset();
         // Reset the cart to its initial position
         cart.Reset();
-        _randomBias = Random.Range(-1.0f, 1.0f);
     }
 
     private bool CheckForDeath()

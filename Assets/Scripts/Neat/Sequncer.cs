@@ -28,4 +28,14 @@ public class Sequencer
     {
         return _connectionId++;
     }
+
+    public void ResetNodeIds()
+    {
+        _nodeId = 0;
+    }
+
+    public void ResetConnectionIds()
+    {
+        _connectionId = 0;
+    }
 }

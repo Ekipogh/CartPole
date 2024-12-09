@@ -105,4 +105,10 @@ public class Node
             OutConnections.Add(connection);
         }
     }
+
+    public Node Copy()
+    {
+        var node = new Node(Type, Id);
+        return node;
+    }
 }

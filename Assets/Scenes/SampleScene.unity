@@ -2223,7 +2223,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   windAffectedObject: {fileID: 1853496706}
-  windForce: 0.5
+  windForce: 0
 --- !u!212 &1798607806
 SpriteRenderer:
   m_ObjectHideFlags: 0

@@ -59,6 +59,14 @@ public class Neat
         _connectionGenes = connections;
     }
 
+    public Neat()
+    {
+        _nodeGenes = new List<Node>();
+        _connectionGenes = new List<Connection>();
+        _inputNodes = new List<Node>();
+        _outputNodes = new List<Node>();
+    }
+
     public List<float> Evaluate(float[] inputs)
     {
         var output = new List<float>();
@@ -94,8 +102,7 @@ public class Neat
 
     public Neat Crossover(Neat other)
     {
-        var child = new Neat(_inputNodes.Count, _outputNodes.Count);
-        child.Clear();
+        var child = new Neat();
         child.InheritNodes(this, other);
         child.InheritConnections(this, other);
         child.Mutate();
@@ -131,48 +138,50 @@ public class Neat
         // if neither parent has the node, skip it
         foreach (var (id, (node1, node2)) in nodes)
         {
+            var node1Copy = node1?.Copy();
+            var node2Copy = node2?.Copy();
             if (node1 != null && node2 != null)
             {
-                // they are the same, just add one of them
-                _nodeGenes.Add(node1);
-                if (node1.Type == NodeType.Input)
-                {
-                    _inputNodes.Add(node1);
-                }
-                else if (node1.Type == NodeType.Output)
-                {
-                    _outputNodes.Add(node1);
-                }
+            // they are the same, just add one of them
+            _nodeGenes.Add(node1Copy);
+            if (node1Copy.Type == NodeType.Input)
+            {
+                _inputNodes.Add(node1Copy);
+            }
+            else if (node1Copy.Type == NodeType.Output)
+            {
+                _outputNodes.Add(node1Copy);
+            }
             }
             else if (node1 != null)
             {
-                if (parent1Fitness > parent2Fitness)
+            if (parent1Fitness > parent2Fitness)
+            {
+                _nodeGenes.Add(node1Copy);
+                if (node1Copy.Type == NodeType.Input)
                 {
-                    _nodeGenes.Add(node1);
-                    if (node1.Type == NodeType.Input)
-                    {
-                        _inputNodes.Add(node1);
-                    }
-                    else if (node1.Type == NodeType.Output)
-                    {
-                        _outputNodes.Add(node1);
-                    }
+                _inputNodes.Add(node1Copy);
                 }
+                else if (node1Copy.Type == NodeType.Output)
+                {
+                _outputNodes.Add(node1Copy);
+                }
+            }
             }
             else if (node2 != null)
             {
-                if (parent2Fitness > parent1Fitness)
+            if (parent2Fitness > parent1Fitness)
+            {
+                _nodeGenes.Add(node2Copy);
+                if (node2Copy.Type == NodeType.Input)
                 {
-                    _nodeGenes.Add(node2);
-                    if (node2.Type == NodeType.Input)
-                    {
-                        _inputNodes.Add(node2);
-                    }
-                    else if (node2.Type == NodeType.Output)
-                    {
-                        _outputNodes.Add(node2);
-                    }
+                _inputNodes.Add(node2Copy);
                 }
+                else if (node2Copy.Type == NodeType.Output)
+                {
+                _outputNodes.Add(node2Copy);
+                }
+            }
             }
         }
     }
@@ -181,13 +190,6 @@ public class Neat
     {
         var parent1Fitness = parent1._fitness;
         var parent2Fitness = parent2._fitness;
-        // clear the connections
-        foreach (var node in _nodeGenes)
-        {
-            node.InConnections.Clear();
-            node.OutConnections.Clear();
-        }
-        _connectionGenes.Clear();
         // compile all connections from both parents
         // id: (parent1Connection|null, parent2Connection|null)
         var connections = new Dictionary<int, (Connection, Connection)>();
@@ -216,33 +218,29 @@ public class Neat
             {
                 if (Random.value < 0.5f)
                 {
-                    _connectionGenes.Add(connection1);
-                    connection1.FromNode.AddOutConnection(connection1);
-                    connection1.ToNode.AddInConnection(connection1);
+                    var connection1Copy = connection1.Copy(_nodeGenes);
+                    _connectionGenes.Add(connection1Copy);
                 }
                 else
                 {
-                    _connectionGenes.Add(connection2);
-                    connection2.FromNode.AddOutConnection(connection2);
-                    connection2.ToNode.AddOutConnection(connection2);
+                    var connection2Copy = connection2.Copy(_nodeGenes);
+                    _connectionGenes.Add(connection2Copy);
                 }
             }
             else if (connection1 != null)
             {
                 if (parent1Fitness > parent2Fitness)
                 {
-                    _connectionGenes.Add(connection1);
-                    connection1.FromNode.AddOutConnection(connection1);
-                    connection1.ToNode.AddInConnection(connection1);
+                    var connection1Copy = connection1.Copy(_nodeGenes);
+                    _connectionGenes.Add(connection1Copy);
                 }
             }
             else if (connection2 != null)
             {
                 if (parent2Fitness > parent1Fitness)
                 {
-                    _connectionGenes.Add(connection2);
-                    connection2.FromNode.AddOutConnection(connection2);
-                    connection2.ToNode.AddInConnection(connection2);
+                    var connection2Copy = connection2.Copy(_nodeGenes);
+                    _connectionGenes.Add(connection2Copy);
                 }
             }
         }
