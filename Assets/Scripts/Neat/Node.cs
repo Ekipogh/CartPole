@@ -10,6 +10,7 @@ public enum NodeType
 
 public class Node
 {
+    private Neat neat; // reference to the neat object that contains this node
     public NodeType Type { get; set; }
     public int Id { get; }
 

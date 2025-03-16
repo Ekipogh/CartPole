@@ -24,15 +24,15 @@ public class NeatController : MonoBehaviour
 
     private float _randomBias;
 
-    private const int _inputSize = 4;
+    private const int _inputSize = 5;
     private const int _outputSize = 1;
 
     // genetic algorithm settings
     private List<Neat> _currentGeneration;
 
-    private const int _generations = 100;
+    private const int _generations = 50;
     private int _currentGenerationIndex = 0;
-    private const int _populationSize = 100; // number of specimens in the current generation
+    private const int _populationSize = 50; // number of specimens in the current generation
     private int _currentSpecimenIndex = 0;
     private bool _currentSpecimenIsDead = false;
 
@@ -43,19 +43,13 @@ public class NeatController : MonoBehaviour
     private List<float> _averageFitness = new List<float>();
     private List<float> _maxFitness = new List<float>();
 
-    private const float didntmoveDelta = 0.001f;
+    public StatisticsSO statisticsSO;
+    public NodeSO nodeSO;
+
+    public float didntmoveDelta = 30;
 
     void Start()
     {
-        lineRenderer = gameObject.GetComponent<LineRenderer>();
-        if (lineRenderer == null)
-        {
-            lineRenderer = gameObject.AddComponent<LineRenderer>();
-        }
-        lineRenderer.positionCount = 2;
-        lineRenderer.startWidth = 0.1f;
-        lineRenderer.endWidth = 0.1f;
-
         _poleInitialPosition = pole.transform.position;
         _poleInitialRotation = pole.transform.rotation;
         _cartInitialPosition = cart.transform.position;
@@ -114,18 +108,21 @@ public class NeatController : MonoBehaviour
             if (_currentSpecimenIsDead)
             {
                 var fitnessBonus = 0.0f;
-                const float nonMovedBonus = -2f;
+                const float nonMovedBonus = -5f;
                 if (cart.moveAmount < didntmoveDelta)
                 {
+                    Debug.Log("Specimen " + _currentSpecimenIndex + " didn't move.");
                     fitnessBonus += nonMovedBonus;
                 }
                 _currentSpecimen.Dead(fitnessBonus);
+                statisticsSO.lastSpecimenFitness = _currentSpecimen.Fitness;
                 Debug.Log("Specimen " + _currentSpecimenIndex + " died. Fitness: " + _currentSpecimen.Fitness);
                 _currentSpecimenIndex++;
                 if (_currentSpecimenIndex >= _populationSize)
                 {
-                    _currentGeneration.Sort((a, b) => a.Fitness.CompareTo(b.Fitness));
-                    _currentGeneration.Reverse();
+                    _currentGeneration.Sort((a, b) => b.Fitness.CompareTo(a.Fitness));
+                    // Save the best specimen
+                    _currentGeneration[0].Save($"gen{_currentGenerationIndex}_best");
                     Statistics();
                     _currentSpecimenIndex = 0;
                     _currentGenerationIndex++;
@@ -141,6 +138,7 @@ public class NeatController : MonoBehaviour
         {
             Debug.Log("Training finished");
             _currentSpecimen = _currentGeneration[0];
+            _currentSpecimen.Save("best");
         }
     }
 
@@ -150,15 +148,30 @@ public class NeatController : MonoBehaviour
         {
             var inputs = new float[_inputSize];
             // Calculate the angle of the pole relative to the vertical axis
-            inputs[0] = pole.transform.rotation.eulerAngles.z;
+            var angle = pole.transform.rotation.eulerAngles.z;
+            // translate the angle to the range [-180, 180]
+            if (angle > 180)
+            {
+                angle -= 360;
+            }
+
+            inputs[0] = angle;
             // Calculate the relative x position of the pole's bottom point to the cart
-            inputs[1] = poleBottomPoint.position.x - transform.position.x;
+            var poleSlide = poleBottomPoint.position.x - cart.transform.position.x;
+            inputs[1] = poleSlide;
             // Cart x position
-            inputs[2] = cart.transform.position.x;
+            var cartX = cart.transform.position.x;
+            inputs[2] = cartX;
+            // Pole height
+            var poleHeight = poleTopPoint.position.y;
+            inputs[3] = poleHeight;
             // Include a random bias in the inputs
-            inputs[3] = _randomBias;
+            inputs[4] = _randomBias;
 
             var outputs = _currentSpecimen.Evaluate(inputs);
+
+            nodeSO.SetInputs(inputs);
+            nodeSO.SetOutputs(outputs);
             cart.moveAmount += Mathf.Abs(outputs[0]);
             cart.Move(new Vector2(outputs[0], 0));
         }
@@ -223,6 +236,8 @@ public class NeatController : MonoBehaviour
         averageFitness /= _populationSize;
         _averageFitness.Add(averageFitness);
         _maxFitness.Add(maxFitness);
+        statisticsSO.averageFitness = averageFitness;
+        statisticsSO.bestFitness = maxFitness;
         Debug.Log("Generation: " + _currentGenerationIndex + " Average Fitness: " + averageFitness + " Max Fitness: " + maxFitness);
         if (_currentGenerationIndex > 0)
         {
@@ -231,5 +246,17 @@ public class NeatController : MonoBehaviour
             Debug.Log("Average difference from previous generation: " + previousAverageDifference);
             Debug.Log("Maximum difference from previous generation: " + previousMaxDifference);
         }
+    }
+
+    private bool LoadBest()
+    {
+        var best_file = "SavedSpecimen/best.txt";
+        if (System.IO.File.Exists(best_file))
+        {
+            var best = Neat.Load(best_file);
+            _currentGeneration.Add(best);
+            return true;
+        }
+        return false;
     }
 }

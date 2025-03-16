@@ -38,4 +38,14 @@ public class Sequencer
     {
         _connectionId = 0;
     }
+
+    public void SetNodeId(int id)
+    {
+        _nodeId = id;
+    }
+
+    public void SetConnectionId(int id)
+    {
+        _connectionId = id;
+    }
 }

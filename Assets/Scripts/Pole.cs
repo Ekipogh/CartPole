@@ -37,6 +37,11 @@ public class Pole : MonoBehaviour
         _initialPosition = transform.position;
     }
 
+    void OnEnable()
+    {
+        IgnoreCollision();
+    }
+
     void Update()
     {
         _verticalness += transform.rotation.eulerAngles.z;
@@ -57,5 +62,17 @@ public class Pole : MonoBehaviour
         rb.angularVelocity = 0.0f;
         _isFallen = false;
         _verticalness = 0.0f;
+    }
+
+    private void IgnoreCollision()
+    {
+        var poles = GameObject.FindGameObjectsWithTag("Pole");
+        foreach (var pole in poles)
+        {
+            if (pole != gameObject)
+            {
+                Physics2D.IgnoreCollision(pole.GetComponent<Collider2D>(), GetComponent<Collider2D>());
+            }
+        }
     }
 }
