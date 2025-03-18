@@ -32,11 +32,11 @@ public class NeatController : MonoBehaviour
 
     private const int _generations = 50;
     private int _currentGenerationIndex = 0;
-    private const int _populationSize = 20; // number of specimens in the current generation
+    private const int _populationSize = 50; // number of specimens in the current generation
     private int _currentSpecimenIndex = 0;
     private bool _currentSpecimenIsDead = false;
 
-    private const int _championSize = 9; // number of specimens that will be preserved in the next generation
+    private const int _championSize = 5; // number of specimens that will be preserved in the next generation
     private const int _antichampionSize = 1; // number of worst specimens that will be saved in the next generation
 
     // statistics
