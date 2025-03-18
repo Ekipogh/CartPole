@@ -4,24 +4,32 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "NodeSO", menuName = "Scriptable Objects/NodeSO")]
 public class NodeSO : ScriptableObject
 {
-    public List<float> inputs = new(5);
-    public List<float> outputs = new(1);
+    public float angle = 0;
+    public float slide = 0;
+    public float cartx = 0;
+
+    public float poleHeight = 0;
+
+    public float randomBias = 0;
+    public float move = 0;
 
     public void SetInputs(float[] inputs)
     {
-        // format values to 2 decimal places
-        for (int i = 0; i < inputs.Length; i++)
+        if (inputs.Length != 5)
         {
-            this.inputs[i] = (float)System.Math.Round(inputs[i], 2);
+            Debug.LogError("Invalid number of inputs");
+            return;
         }
+        angle = (float)System.Math.Round(inputs[0], 2);
+        slide = (float)System.Math.Round(inputs[1], 2);
+        cartx = (float)System.Math.Round(inputs[2], 2);
+        poleHeight = (float)System.Math.Round(inputs[3], 2);
+        randomBias = (float)System.Math.Round(inputs[4], 2);
     }
 
-    public void SetOutputs(List<float> outputs)
+    public void SetMove(float move)
     {
-        // format values to 2 decimal places
-        for (int i = 0; i < outputs.Count; i++)
-        {
-            this.outputs[i] = (float)System.Math.Round(outputs[i], 2);
-        }
+        this.move = (float)System.Math.Round(move, 2);
+
     }
 }

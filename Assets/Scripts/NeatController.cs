@@ -32,11 +32,11 @@ public class NeatController : MonoBehaviour
 
     private const int _generations = 50;
     private int _currentGenerationIndex = 0;
-    private const int _populationSize = 50; // number of specimens in the current generation
+    private const int _populationSize = 20; // number of specimens in the current generation
     private int _currentSpecimenIndex = 0;
     private bool _currentSpecimenIsDead = false;
 
-    private const int _championSize = 10; // number of specimens that will be preserved in the next generation
+    private const int _championSize = 9; // number of specimens that will be preserved in the next generation
     private const int _antichampionSize = 1; // number of worst specimens that will be saved in the next generation
 
     // statistics
@@ -57,41 +57,21 @@ public class NeatController : MonoBehaviour
         _currentGeneration = new List<Neat>();
         _randomBias = Random.Range(-1.0f, 1.0f);
 
-        for (int i = 0; i < _populationSize; i++)
+        var bestSpecimen = LoadBest();
+        var startPopulationSize = bestSpecimen ? _populationSize - 1 : _populationSize;
+
+        for (int i = 0; i < startPopulationSize; i++)
         {
-            var connections = new List<Connection>();
-            var inputNodes = new List<Node>();
-            var outputNodes = new List<Node>();
-            for (int j = 0; j < _inputSize; j++)
-            {
-                inputNodes.Add(new Node(NodeType.Input));
-            }
-            for (int j = 0; j < _outputSize; j++)
-            {
-                outputNodes.Add(new Node(NodeType.Output));
-            }
-            // reset the sequencer if it's not the last specimen
-            if (i < _populationSize - 1)
-            {
-                Sequencer.Instance.ResetNodeIds();
-            }
-            for (int j = 0; j < _inputSize; j++)
-            {
-                for (int k = 0; k < _outputSize; k++)
-                {
-                    var connection = new Connection(inputNodes[j], outputNodes[k], Random.Range(-1.0f, 1.0f));
-                    connections.Add(connection);
-                    inputNodes[j].AddOutConnection(connection);
-                    outputNodes[k].AddInConnection(connection);
-                }
-            }
-            if (i < _populationSize - 1)
-            {
-                Sequencer.Instance.ResetConnectionIds();
-            }
-            _currentGeneration.Add(new Neat(inputNodes, outputNodes, connections));
+            var newSpecimen = new Neat(_inputSize, _outputSize);
+            _currentGeneration.Add(newSpecimen);
         }
         _currentSpecimen = _currentGeneration[_currentSpecimenIndex];
+        var angle = pole.transform.rotation.eulerAngles.z;
+        if (angle > 180)
+        {
+            angle -= 360;
+        }
+        _currentSpecimen.SetPoleAngle(angle);
     }
 
     // Update is called once per frame
@@ -123,6 +103,8 @@ public class NeatController : MonoBehaviour
                     _currentGeneration.Sort((a, b) => b.Fitness.CompareTo(a.Fitness));
                     // Save the best specimen
                     _currentGeneration[0].Save($"gen{_currentGenerationIndex}_best");
+                    // save the worst specimen
+                    _currentGeneration[_populationSize - 1].Save($"gen{_currentGenerationIndex}_worst");
                     Statistics();
                     _currentSpecimenIndex = 0;
                     _currentGenerationIndex++;
@@ -138,7 +120,6 @@ public class NeatController : MonoBehaviour
         {
             Debug.Log("Training finished");
             _currentSpecimen = _currentGeneration[0];
-            _currentSpecimen.Save("best");
         }
     }
 
@@ -168,12 +149,16 @@ public class NeatController : MonoBehaviour
             // Include a random bias in the inputs
             inputs[4] = _randomBias;
 
+            // output[0] sigmoid value between 0 and 1
             var outputs = _currentSpecimen.Evaluate(inputs);
+            // move value between -1 and 1
+            var move = outputs[0] * 2 - 1;
 
             nodeSO.SetInputs(inputs);
-            nodeSO.SetOutputs(outputs);
-            cart.moveAmount += Mathf.Abs(outputs[0]);
-            cart.Move(new Vector2(outputs[0], 0));
+            nodeSO.SetMove(move);
+            cart.moveAmount += Mathf.Abs(move);
+            cart.Move(new Vector2(move, 0));
+            _currentSpecimen.SetPoleAngle(angle);
         }
         else
         {
@@ -250,7 +235,7 @@ public class NeatController : MonoBehaviour
 
     private bool LoadBest()
     {
-        var best_file = "SavedSpecimen/best.txt";
+        var best_file = "SavedSpecimen/best.json";
         if (System.IO.File.Exists(best_file))
         {
             var best = Neat.Load(best_file);

@@ -54,7 +54,11 @@ public class Pole : MonoBehaviour
         transform.rotation = Quaternion.identity;
         if (isRotated)
         {
-            var randomRotation = Random.Range(-rotaion, rotaion);
+            float randomRotation;
+            do
+            {
+                randomRotation = Random.Range(-rotaion, rotaion);
+            } while (randomRotation == 0);
             transform.Rotate(0, 0, randomRotation);
         }
         var rb = GetComponent<Rigidbody2D>();

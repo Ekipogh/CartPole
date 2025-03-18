@@ -48,4 +48,24 @@ public class Sequencer
     {
         _connectionId = id;
     }
+
+    public void SetNodeIdMax(int id)
+    {
+        // if the id is greater than the current id, set the current id to the new id
+        // usefull wen loading a saved genome
+        if (id > _nodeId)
+        {
+            _nodeId = id;
+        }
+    }
+
+    public void SetConnectionIdMax(int id)
+    {
+        // if the id is greater than the current id, set the current id to the new id
+        // usefull wen loading a saved genome
+        if (id > _connectionId)
+        {
+            _connectionId = id;
+        }
+    }
 }

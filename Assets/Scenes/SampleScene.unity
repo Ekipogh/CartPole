@@ -3624,7 +3624,7 @@ MonoBehaviour:
   poleDebugLinePosition: {fileID: 1889508776}
   statisticsSO: {fileID: 11400000, guid: 73c9fc7eb0bb60549aed93559fb84380, type: 2}
   nodeSO: {fileID: 11400000, guid: 83e7c70ba3ab16f4f84500d492841e39, type: 2}
-  didntmoveDelta: 30
+  didntmoveDelta: -1
 --- !u!120 &1535853173
 LineRenderer:
   serializedVersion: 2

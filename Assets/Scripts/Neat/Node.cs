@@ -20,7 +20,7 @@ public class Node
 
     public List<Connection> OutConnections { get; set; }
 
-    private readonly ActivationFunction _activationFunction;
+    private ActivationFunction _activationFunction;
 
     public Node(NodeType type, int id = -1)
     {
@@ -116,5 +116,11 @@ public class Node
     public string Save()
     {
         return $"Node: {Id} {Type} {_activationFunction}";
+    }
+
+    public ActivationFunction ActivationFunction
+    {
+        get { return _activationFunction; }
+        set { _activationFunction = value; }
     }
 }
