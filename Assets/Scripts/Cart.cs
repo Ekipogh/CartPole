@@ -9,6 +9,8 @@ public class Cart : MonoBehaviour
     private InputAction moveAction;
     private Vector3 _initialPosition;
 
+    public float moveAmount = 0;
+
     public float speed = 15;
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Awake()
@@ -21,6 +23,7 @@ public class Cart : MonoBehaviour
     void OnEnable()
     {
         moveAction.Enable();
+        IgnoreCollision();
     }
 
     void OnDisable()
@@ -45,5 +48,18 @@ public class Cart : MonoBehaviour
     {
         transform.position = _initialPosition;
         rb.linearVelocity = Vector2.zero;
+        moveAmount = 0;
+    }
+
+    private void IgnoreCollision()
+    {
+        var carts = GameObject.FindGameObjectsWithTag("Cart");
+        foreach (var cart in carts)
+        {
+            if (cart != gameObject)
+            {
+                Physics2D.IgnoreCollision(cart.GetComponent<Collider2D>(), GetComponent<Collider2D>());
+            }
+        }
     }
 }

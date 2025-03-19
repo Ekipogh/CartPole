@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Unity.VisualScripting;
 
 public enum NodeType
 {
@@ -9,6 +10,7 @@ public enum NodeType
 
 public class Node
 {
+    private Neat neat; // reference to the neat object that contains this node
     public NodeType Type { get; set; }
     public int Id { get; }
 
@@ -18,13 +20,19 @@ public class Node
 
     public List<Connection> OutConnections { get; set; }
 
-    private readonly ActivationFunction _activationFunction;
+    private ActivationFunction _activationFunction;
 
-    public Node(NodeType type)
+    public Node(NodeType type, int id = -1)
     {
-        var sequencer = new Sequencer();
         Type = type;
-        Id = sequencer.GetNextNodeId();
+        if (id == -1)
+        {
+            Id = Sequencer.Instance.GetNextNodeId();
+        }
+        else
+        {
+            Id = id;
+        }
         Value = 0.0f;
 
         InConnections = new List<Connection>();
@@ -49,7 +57,11 @@ public class Node
     // 3. Sum the values of all incoming connections and save it the Value of the node
     public float CalculateValue()
     {
-        var sum = Value;
+        if (Type == NodeType.Input)
+        {
+            return Value;
+        }
+        var sum = 0.0f;
         foreach (var connection in InConnections)
         {
             if (connection.Enabled)
@@ -59,5 +71,56 @@ public class Node
         }
         Value = _activationFunction.Activate(sum);
         return Value;
+    }
+    public void AddInConnection(Connection connection)
+    {
+        var connectionId = connection.Id;
+        var exists = false;
+        foreach (var c in InConnections)
+        {
+            if (c.Id == connectionId)
+            {
+                exists = true;
+                break;
+            }
+        }
+        if (!exists)
+        {
+            InConnections.Add(connection);
+        }
+    }
+    public void AddOutConnection(Connection connection)
+    {
+        var connectionId = connection.Id;
+        var exists = false;
+        foreach (var c in OutConnections)
+        {
+            if (c.Id == connectionId)
+            {
+                exists = true;
+                break;
+            }
+        }
+        if (!exists)
+        {
+            OutConnections.Add(connection);
+        }
+    }
+
+    public Node Copy()
+    {
+        var node = new Node(Type, Id);
+        return node;
+    }
+
+    public string Save()
+    {
+        return $"Node: {Id} {Type} {_activationFunction}";
+    }
+
+    public ActivationFunction ActivationFunction
+    {
+        get { return _activationFunction; }
+        set { _activationFunction = value; }
     }
 }

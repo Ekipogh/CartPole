@@ -1,0 +1,48 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
+    <Style src="project://database/Assets/Editor/FintessUI.uss?fileID=7433441132597879392&amp;guid=567e31fe69deefb4babd08e40c7a49ac&amp;type=3#FintessUI" />
+    <ui:FloatField label="Average Fitness" value="42.2" name="FloatField" data-source="project://database/Assets/ScriptableObjects/StatisticsSO.asset?fileID=11400000&amp;guid=73c9fc7eb0bb60549aed93559fb84380&amp;type=2#StatisticsSO" data-source-path="averageFitness" style="width: 218px;">
+        <Bindings>
+            <ui:DataBinding property="value" binding-mode="ToTarget" />
+        </Bindings>
+    </ui:FloatField>
+    <ui:FloatField label="Max Fitness" value="42.2" data-source="project://database/Assets/ScriptableObjects/StatisticsSO.asset?fileID=11400000&amp;guid=73c9fc7eb0bb60549aed93559fb84380&amp;type=2#StatisticsSO" data-source-path="bestFitness" style="width: 218px;">
+        <Bindings>
+            <ui:DataBinding property="value" binding-mode="ToTarget" />
+        </Bindings>
+    </ui:FloatField>
+    <ui:FloatField label="Last Fitness" value="42.2" data-source="project://database/Assets/ScriptableObjects/StatisticsSO.asset?fileID=11400000&amp;guid=73c9fc7eb0bb60549aed93559fb84380&amp;type=2#StatisticsSO" data-source-path="lastSpecimenFitness" style="width: 218px;">
+        <Bindings>
+            <ui:DataBinding property="value" binding-mode="ToTarget" />
+        </Bindings>
+    </ui:FloatField>
+    <ui:FloatField value="42.2" data-source="project://database/Assets/ScriptableObjects/NodeSO.asset?fileID=11400000&amp;guid=83e7c70ba3ab16f4f84500d492841e39&amp;type=2#NodeSO" data-source-path="move" name="Move" style="position: absolute; top: 80px; left: 1284px; width: 80px;">
+        <Bindings>
+            <ui:DataBinding property="value" binding-mode="ToTarget" />
+        </Bindings>
+    </ui:FloatField>
+    <ui:FloatField value="42.2" data-source="project://database/Assets/ScriptableObjects/NodeSO.asset?fileID=11400000&amp;guid=83e7c70ba3ab16f4f84500d492841e39&amp;type=2#NodeSO" data-source-path="randomBias" name="RandomBias" label="Random Bias" style="position: absolute; top: 160px; left: 1060px; width: 220px; flex-direction: row; flex-basis: auto; overflow: hidden; align-items: center; align-content: flex-start; justify-content: flex-end; align-self: flex-start; white-space: nowrap; text-overflow: clip; -unity-text-align: upper-right; flex-wrap: nowrap;">
+        <Bindings>
+            <ui:DataBinding property="value" binding-mode="ToTarget" />
+        </Bindings>
+    </ui:FloatField>
+    <ui:FloatField value="42.2" data-source="project://database/Assets/ScriptableObjects/NodeSO.asset?fileID=11400000&amp;guid=83e7c70ba3ab16f4f84500d492841e39&amp;type=2#NodeSO" data-source-path="cartx" name="CartX" label="CartX" style="position: absolute; top: 80px; left: 1060px; width: 220px; flex-direction: row; flex-basis: auto; overflow: hidden; align-items: center; align-content: flex-start; justify-content: flex-end; align-self: flex-start; white-space: nowrap; text-overflow: clip; -unity-text-align: upper-right; flex-wrap: nowrap;">
+        <Bindings>
+            <ui:DataBinding property="value" binding-mode="ToTarget" />
+        </Bindings>
+    </ui:FloatField>
+    <ui:FloatField value="42.2" data-source="project://database/Assets/ScriptableObjects/NodeSO.asset?fileID=11400000&amp;guid=83e7c70ba3ab16f4f84500d492841e39&amp;type=2#NodeSO" data-source-path="poleHeight" name="PoleHeight" label="Pole Height" style="position: absolute; top: 120px; left: 1060px; width: 220px; flex-direction: row; flex-basis: auto; overflow: hidden; align-items: center; align-content: flex-start; justify-content: flex-end; align-self: flex-start; white-space: nowrap; text-overflow: clip; -unity-text-align: upper-right; flex-wrap: nowrap;">
+        <Bindings>
+            <ui:DataBinding property="value" binding-mode="ToTarget" />
+        </Bindings>
+    </ui:FloatField>
+    <ui:FloatField value="42.2" data-source="project://database/Assets/ScriptableObjects/NodeSO.asset?fileID=11400000&amp;guid=83e7c70ba3ab16f4f84500d492841e39&amp;type=2#NodeSO" data-source-path="angle" label="Angle" name="Angle" style="position: absolute; top: 0; left: 1060px; width: 220px; flex-direction: row; flex-basis: auto; overflow: hidden; align-items: center; align-content: flex-start; justify-content: flex-end; align-self: flex-start; white-space: nowrap; text-overflow: clip; -unity-text-align: upper-right; flex-wrap: nowrap;">
+        <Bindings>
+            <ui:DataBinding property="value" binding-mode="ToTarget" />
+        </Bindings>
+    </ui:FloatField>
+    <ui:FloatField value="42.2" data-source="project://database/Assets/ScriptableObjects/NodeSO.asset?fileID=11400000&amp;guid=83e7c70ba3ab16f4f84500d492841e39&amp;type=2#NodeSO" data-source-path="slide" label="Slide" name="Slide" style="position: absolute; top: 40px; left: 1060px; width: 220px; flex-direction: row; flex-basis: auto; overflow: hidden; align-items: center; align-content: flex-start; justify-content: flex-end; align-self: flex-start; white-space: nowrap; text-overflow: clip; -unity-text-align: upper-right; flex-wrap: nowrap;">
+        <Bindings>
+            <ui:DataBinding property="value" binding-mode="ToTarget" />
+        </Bindings>
+    </ui:FloatField>
+</ui:UXML>
