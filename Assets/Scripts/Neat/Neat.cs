@@ -27,7 +27,7 @@ public class ConnectionData
 public class Neat
 {
     protected List<Node> _nodes;
-    protected List<Node> _inputes;
+    protected List<Node> _inputs;
     private List<Node> _outputs;
     private List<Connection> _connections;
     private long _frames = 0;
@@ -48,14 +48,14 @@ public class Neat
         var localConnectionId = 0;
         _nodes = new List<Node>();
         _connections = new List<Connection>();
-        _inputes = new List<Node>();
+        _inputs = new List<Node>();
         _outputs = new List<Node>();
 
         for (int i = 0; i < inputSize; i++)
         {
             var node = new Node(NodeType.Input, id: localNodeId++);
             _nodes.Add(node);
-            _inputes.Add(node);
+            _inputs.Add(node);
         }
 
         for (int i = 0; i < outputSize; i++)
@@ -67,7 +67,7 @@ public class Neat
 
         foreach (var outputNode in _outputs)
         {
-            foreach (var inputNode in _inputes)
+            foreach (var inputNode in _inputs)
             {
                 var randomWeight = Random.Range(-1.0f, 1.0f);
                 var connection = new Connection(inputNode, outputNode, randomWeight, id: localConnectionId++);
@@ -86,7 +86,7 @@ public class Neat
     {
         _nodes = new List<Node>();
         _connections = new List<Connection>();
-        _inputes = new List<Node>();
+        _inputs = new List<Node>();
         _outputs = new List<Node>();
 
         var nodeIdMax = 0;
@@ -113,7 +113,7 @@ public class Neat
             _nodes.Add(newNode);
             if (nodeType == NodeType.Input)
             {
-                _inputes.Add(newNode);
+                _inputs.Add(newNode);
             }
             else if (nodeType == NodeType.Output)
             {
@@ -155,7 +155,7 @@ public class Neat
     {
         _nodes = new List<Node>();
         _connections = new List<Connection>();
-        _inputes = new List<Node>();
+        _inputs = new List<Node>();
         _outputs = new List<Node>();
     }
 
@@ -165,17 +165,11 @@ public class Neat
         var output = new List<float>();
         for (int i = 0; i < inputs.Length; i++)
         {
-            _inputes[i].Value = inputs[i];
+            _inputs[i].Value = inputs[i];
         }
-        try{
         foreach (var outputNode in _outputs)
         {
             output.Add(outputNode.CalculateValue());
-        }
-        }catch(System.Exception e){
-            var timestamp = System.DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss");
-            Save($"error-{timestamp}");
-            Debug.Log(e);
         }
         _frames++;
         return output;
@@ -247,7 +241,7 @@ public class Neat
                 _nodes.Add(node1Copy);
                 if (node1Copy.Type == NodeType.Input)
                 {
-                    _inputes.Add(node1Copy);
+                    _inputs.Add(node1Copy);
                 }
                 else if (node1Copy.Type == NodeType.Output)
                 {
@@ -261,7 +255,7 @@ public class Neat
                     _nodes.Add(node1Copy);
                     if (node1Copy.Type == NodeType.Input)
                     {
-                        _inputes.Add(node1Copy);
+                        _inputs.Add(node1Copy);
                     }
                     else if (node1Copy.Type == NodeType.Output)
                     {
@@ -276,7 +270,7 @@ public class Neat
                     _nodes.Add(node2Copy);
                     if (node2Copy.Type == NodeType.Input)
                     {
-                        _inputes.Add(node2Copy);
+                        _inputs.Add(node2Copy);
                     }
                     else if (node2Copy.Type == NodeType.Output)
                     {
@@ -438,7 +432,7 @@ public class Neat
         }
         _nodes.Clear();
         _connections.Clear();
-        _inputes.Clear();
+        _inputs.Clear();
         _outputs.Clear();
     }
 

@@ -2,7 +2,7 @@ using System.Collections.Generic;
 
 public class Connection
 {
-    private const int _max_visits = 10;
+    private int _max_visits;
     private int _visits = 0;
     public int Id;
 
@@ -34,6 +34,7 @@ public class Connection
         ToNode = toNode;
         Weight = weight;
         Enabled = true;
+        _max_visits = 10;
     }
 
     public Connection Copy(List<Node> nodes)
