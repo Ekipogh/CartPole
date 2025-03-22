@@ -72,6 +72,8 @@ public class NeatController : MonoBehaviour
             angle -= 360;
         }
         _currentSpecimen.SetPoleAngle(angle);
+        statisticsSO.generation = 0;
+        Statistics();
     }
 
     // Update is called once per frame
@@ -98,6 +100,7 @@ public class NeatController : MonoBehaviour
                 statisticsSO.lastSpecimenFitness = _currentSpecimen.Fitness;
                 Debug.Log("Specimen " + _currentSpecimenIndex + " died. Fitness: " + _currentSpecimen.Fitness);
                 _currentSpecimenIndex++;
+                Statistics();
                 if (_currentSpecimenIndex >= _populationSize)
                 {
                     _currentGeneration.Sort((a, b) => b.Fitness.CompareTo(a.Fitness));
@@ -105,9 +108,9 @@ public class NeatController : MonoBehaviour
                     _currentGeneration[0].Save($"gen{_currentGenerationIndex}_best");
                     // save the worst specimen
                     _currentGeneration[_populationSize - 1].Save($"gen{_currentGenerationIndex}_worst");
-                    Statistics();
                     _currentSpecimenIndex = 0;
                     _currentGenerationIndex++;
+                    statisticsSO.generation = _currentGenerationIndex;
                     Evolution();
                 }
                 _currentSpecimen = _currentGeneration[_currentSpecimenIndex];
@@ -212,33 +215,43 @@ public class NeatController : MonoBehaviour
 
     private void Statistics()
     {
-        float averageFitness = 0;
-        float maxFitness = _currentGeneration[0].Fitness;
-        foreach (var specimen in _currentGeneration)
+
+
+        if (_currentSpecimenIndex == 0)
         {
-            averageFitness += specimen.Fitness;
+            // Reset statistics
+            statisticsSO.averageFitness = 0;
+            statisticsSO.bestFitness = 0;
+            statisticsSO.lastSpecimenFitness = 0;
         }
-        averageFitness /= _populationSize;
-        _averageFitness.Add(averageFitness);
-        _maxFitness.Add(maxFitness);
-        statisticsSO.averageFitness = averageFitness;
-        statisticsSO.bestFitness = maxFitness;
-        Debug.Log("Generation: " + _currentGenerationIndex + " Average Fitness: " + averageFitness + " Max Fitness: " + maxFitness);
-        if (_currentGenerationIndex > 0)
+        else
         {
-            var previousAverageDifference = averageFitness - _averageFitness[_currentGenerationIndex - 1];
-            var previousMaxDifference = maxFitness - _maxFitness[_currentGenerationIndex - 1];
-            Debug.Log("Average difference from previous generation: " + previousAverageDifference);
-            Debug.Log("Maximum difference from previous generation: " + previousMaxDifference);
+            // Calculate continuous statistics
+            float totalFitness = 0;
+            float maxFitness = float.MinValue;
+            foreach (var specimen in _currentGeneration.GetRange(0, _currentSpecimenIndex))
+            {
+                totalFitness += specimen.Fitness;
+                if (specimen.Fitness > maxFitness)
+                {
+                    maxFitness = specimen.Fitness;
+                }
+            }
+
+            float averageFitness = totalFitness / (_currentSpecimenIndex + 1);
+
+            statisticsSO.averageFitness = averageFitness;
+            statisticsSO.bestFitness = maxFitness;
+            statisticsSO.lastSpecimenFitness = _currentGeneration[_currentSpecimenIndex - 1].Fitness;
         }
     }
 
     private bool LoadBest()
     {
-        var best_file = "SavedSpecimen/best.json";
-        if (System.IO.File.Exists(best_file))
+        const string bestFilePath = "SavedSpecimen/best.json";
+        if (System.IO.File.Exists(bestFilePath))
         {
-            var best = Neat.Load(best_file);
+            var best = Neat.Load(bestFilePath);
             _currentGeneration.Add(best);
             return true;
         }

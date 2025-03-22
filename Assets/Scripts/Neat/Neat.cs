@@ -37,10 +37,10 @@ public class Neat
 
     private float _poleAngleSum;
 
-    private const float _addNodeMutationRate = 0.03f;
-    private const float _addConnectionMutationRate = 0.05f;
+    private const float _addNodeMutationRate = 0.1f;
+    private const float _addConnectionMutationRate = 0.1f;
     private const float _weightMutationRate = 0.8f;
-    private const float _enableDisableMutationRate = 0.01f;
+    private const float _enableDisableMutationRate = 0.1f;
 
     public Neat(int inputSize, int outputSize)
     {
@@ -166,9 +166,15 @@ public class Neat
         {
             _inputes[i].Value = inputs[i];
         }
+        try{
         foreach (var outputNode in _outputs)
         {
             output.Add(outputNode.CalculateValue());
+        }
+        }catch(System.Exception e){
+            var timestamp = System.DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss");
+            Save($"error-{timestamp}");
+            Debug.Log(e);
         }
         _frames++;
         return output;
