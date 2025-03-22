@@ -10,7 +10,6 @@ public enum NodeType
 
 public class Node
 {
-    private Neat neat; // reference to the neat object that contains this node
     public NodeType Type { get; set; }
     public int Id { get; }
 
@@ -64,7 +63,7 @@ public class Node
         var sum = 0.0f;
         foreach (var connection in InConnections)
         {
-            if (connection.Enabled)
+            if (connection.Enabled && connection.Visit())
             {
                 sum += connection.FromNode.CalculateValue() * connection.Weight;
             }
@@ -122,5 +121,13 @@ public class Node
     {
         get { return _activationFunction; }
         set { _activationFunction = value; }
+    }
+
+    public void ResetVisits()
+    {
+        foreach (var connection in InConnections)
+        {
+            connection.ResetVisits();
+        }
     }
 }

@@ -161,6 +161,7 @@ public class Neat
 
     public List<float> Evaluate(float[] inputs)
     {
+        ResetVisits();
         var output = new List<float>();
         for (int i = 0; i < inputs.Length; i++)
         {
@@ -484,5 +485,13 @@ public class Neat
     public void SetPoleAngle(float angle)
     {
         _poleAngleSum += angle;
+    }
+
+    private void ResetVisits()
+    {
+        foreach (var node in _nodes)
+        {
+            node.ResetVisits();
+        }
     }
 }
