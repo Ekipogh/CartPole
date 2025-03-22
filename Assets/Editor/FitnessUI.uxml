@@ -1,5 +1,10 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
     <Style src="project://database/Assets/Editor/FintessUI.uss?fileID=7433441132597879392&amp;guid=567e31fe69deefb4babd08e40c7a49ac&amp;type=3#FintessUI" />
+    <ui:IntegerField label="Generation" value="42" data-source="project://database/Assets/ScriptableObjects/StatisticsSO.asset?fileID=11400000&amp;guid=73c9fc7eb0bb60549aed93559fb84380&amp;type=2#StatisticsSO" data-source-path="generation" style="width: 218px;">
+        <Bindings>
+            <ui:DataBinding property="value" binding-mode="ToTarget" />
+        </Bindings>
+    </ui:IntegerField>
     <ui:FloatField label="Average Fitness" value="42.2" name="FloatField" data-source="project://database/Assets/ScriptableObjects/StatisticsSO.asset?fileID=11400000&amp;guid=73c9fc7eb0bb60549aed93559fb84380&amp;type=2#StatisticsSO" data-source-path="averageFitness" style="width: 218px;">
         <Bindings>
             <ui:DataBinding property="value" binding-mode="ToTarget" />

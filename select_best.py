@@ -14,7 +14,7 @@ if __name__ == "__main__":
         if file.endswith(".json") and file != "best.json":
             with open(saved_specimen_directory + "/" + file, "r") as f:
                 specimen_data = json.load(f)
-                if specimen_data["fitness"] > best_fitness:
+                if float(specimen_data["fitness"]) > best_fitness:
                     best_fitness = specimen_data["fitness"]
                     best_specimenfile = file
     print(f"Best specimen file: {best_specimenfile}")
@@ -23,7 +23,7 @@ if __name__ == "__main__":
             best_json_data = json.load(f)
             if best_json_data["fitness"] >= best_fitness:
                 print("Best specimen file already exists.")
-            exit(0)
+                exit(0)
     # copy best specimen file as best.json
     shutil.copyfile(saved_specimen_directory + "/" +
                     best_specimenfile, saved_specimen_directory + "/" + "best.json")

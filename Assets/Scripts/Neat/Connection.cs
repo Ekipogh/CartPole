@@ -2,6 +2,8 @@ using System.Collections.Generic;
 
 public class Connection
 {
+    private int _max_visits;
+    private int _visits = 0;
     public int Id;
 
     public Node FromNode { get; set; }
@@ -12,9 +14,15 @@ public class Connection
 
     public bool Enabled { get; set; }
 
+    public bool Visit()
+    {
+        _visits++;
+        return _visits < _max_visits;
+    }
+
     public Connection(Node fromNode, Node toNode, float weight, int id = -1)
     {
-        if ( id == -1)
+        if (id == -1)
         {
             Id = Sequencer.Instance.GetNextConnectionId();
         }
@@ -26,6 +34,7 @@ public class Connection
         ToNode = toNode;
         Weight = weight;
         Enabled = true;
+        _max_visits = 10;
     }
 
     public Connection Copy(List<Node> nodes)
@@ -42,5 +51,10 @@ public class Connection
     public string Save()
     {
         return $"Connection: {FromNode.Id} {ToNode.Id} {Weight} {Enabled}";
+    }
+
+    public void ResetVisits()
+    {
+        _visits = 0;
     }
 }
