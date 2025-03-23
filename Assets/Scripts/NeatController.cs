@@ -54,6 +54,8 @@ public class NeatController : MonoBehaviour
         _poleInitialRotation = pole.transform.rotation;
         _cartInitialPosition = cart.transform.position;
 
+        cart.SetNumber(_currentSpecimenIndex);
+
         _currentGeneration = new List<Neat>();
         _randomBias = Random.Range(-1.0f, 1.0f);
 
@@ -174,6 +176,7 @@ public class NeatController : MonoBehaviour
         pole.Reset();
         // Reset the cart to its initial position
         cart.Reset();
+        cart.SetNumber(_currentSpecimenIndex);
     }
 
     private bool CheckForDeath()
@@ -238,7 +241,7 @@ public class NeatController : MonoBehaviour
                 }
             }
 
-            float averageFitness = totalFitness / (_currentSpecimenIndex + 1);
+            float averageFitness = totalFitness / _currentSpecimenIndex;
 
             statisticsSO.averageFitness = averageFitness;
             statisticsSO.bestFitness = maxFitness;

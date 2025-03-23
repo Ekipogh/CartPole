@@ -1,6 +1,7 @@
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using TMPro;
 
 public class Cart : MonoBehaviour
 {
@@ -10,6 +11,8 @@ public class Cart : MonoBehaviour
     private Vector3 _initialPosition;
 
     public float moveAmount = 0;
+
+    public TextMeshPro numberText;
 
     public float speed = 15;
     // Start is called once before the first execution of Update after the MonoBehaviour is created
@@ -61,5 +64,10 @@ public class Cart : MonoBehaviour
                 Physics2D.IgnoreCollision(cart.GetComponent<Collider2D>(), GetComponent<Collider2D>());
             }
         }
+    }
+
+    public void SetNumber(int number)
+    {
+        numberText.text = number.ToString();
     }
 }
