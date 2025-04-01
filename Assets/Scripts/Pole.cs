@@ -2,9 +2,11 @@ using UnityEngine;
 
 public class Pole : MonoBehaviour
 {
-    public bool isRotated = false;
-
     private Vector3 _initialPosition;
+
+    public Transform poleTopPoint;
+    public Transform poleMiddlePoint;
+    public Transform poleBottomPoint;
 
     private float _verticalness = 0.0f; //how vertical the pole staid
 
@@ -29,11 +31,6 @@ public class Pole : MonoBehaviour
     public float rotaion = 0.0f;
     void Start()
     {
-        if (isRotated)
-        {
-            var randomRotation = Random.Range(-rotaion, rotaion);
-            transform.Rotate(0, 0, randomRotation);
-        }
         _initialPosition = transform.position;
     }
 
@@ -45,27 +42,6 @@ public class Pole : MonoBehaviour
     void Update()
     {
         _verticalness += transform.rotation.eulerAngles.z;
-    }
-
-
-    public void Reset()
-    {
-        transform.position = _initialPosition;
-        transform.rotation = Quaternion.identity;
-        if (isRotated)
-        {
-            float randomRotation;
-            do
-            {
-                randomRotation = Random.Range(-rotaion, rotaion);
-            } while (randomRotation == 0);
-            transform.Rotate(0, 0, randomRotation);
-        }
-        var rb = GetComponent<Rigidbody2D>();
-        rb.linearVelocity = Vector2.zero;
-        rb.angularVelocity = 0.0f;
-        _isFallen = false;
-        _verticalness = 0.0f;
     }
 
     private void IgnoreCollision()

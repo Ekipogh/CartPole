@@ -42,6 +42,9 @@ public class Neat
     private const float _weightMutationRate = 0.8f;
     private const float _enableDisableMutationRate = 0.1f;
 
+    private bool _isDead = false;
+    public bool IsDead { get { return _isDead; } set { _isDead = value; } }
+
     public Neat(int inputSize, int outputSize)
     {
         var localNodeId = 0;
@@ -186,6 +189,7 @@ public class Neat
     {
         _fitness = CalculateFitness();
         _fitness += fitnessBonus;
+        _isDead = true;
     }
 
     public float CalculateFitness()

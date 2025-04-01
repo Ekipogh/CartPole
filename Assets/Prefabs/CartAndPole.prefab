@@ -200,7 +200,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 992995fb4f681494bb1cf89ff1045ae1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  isRotated: 1
+  poleTopPoint: {fileID: 435895021836178139}
+  poleMiddlePoint: {fileID: 8275428449046855710}
+  poleBottomPoint: {fileID: 7617034957586546871}
   rotaion: 3
 --- !u!1 &1689733343023178696
 GameObject:
@@ -387,6 +389,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2527955434851237503}
+  - component: {fileID: 2682059085107673100}
   m_Layer: 0
   m_Name: CartAndPole
   m_TagString: Untagged
@@ -411,6 +414,20 @@ Transform:
   - {fileID: 6130493948559403488}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2682059085107673100
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5158837740836665420}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b7c8f213cc47b7640a7d7d1da2bc6977, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  cart: {fileID: 954256800022519054}
+  pole: {fileID: 1658839845709085615}
 --- !u!1 &8453688515138784364
 GameObject:
   m_ObjectHideFlags: 0
