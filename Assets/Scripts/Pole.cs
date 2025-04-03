@@ -2,16 +2,11 @@ using UnityEngine;
 
 public class Pole : MonoBehaviour
 {
-    public bool isRotated = false;
+    public Transform poleTopPoint;
+    public Transform poleMiddlePoint;
+    public Transform poleBottomPoint;
 
-    private Vector3 _initialPosition;
-
-    private float _verticalness = 0.0f; //how vertical the pole staid
-
-    public float Verticallness
-    {
-        get { return _verticalness; }
-    }
+    public Cart ownCart;
 
     private bool _isFallen = false;
 
@@ -25,58 +20,34 @@ public class Pole : MonoBehaviour
         return _isFallen;
     }
 
-    [Range(0.0f, 5.0f)]
-    public float rotaion = 0.0f;
-    void Start()
-    {
-        if (isRotated)
-        {
-            var randomRotation = Random.Range(-rotaion, rotaion);
-            transform.Rotate(0, 0, randomRotation);
-        }
-        _initialPosition = transform.position;
-    }
-
     void OnEnable()
     {
         IgnoreCollision();
     }
 
-    void Update()
+    public void IgnoreCollision()
     {
-        _verticalness += transform.rotation.eulerAngles.z;
-    }
-
-
-    public void Reset()
-    {
-        transform.position = _initialPosition;
-        transform.rotation = Quaternion.identity;
-        if (isRotated)
+        var allCarts = Resources.FindObjectsOfTypeAll<GameObject>();
+        foreach (var cart in allCarts)
         {
-            float randomRotation;
-            do
+            if (cart.CompareTag("Cart") && cart != ownCart.gameObject)
             {
-                randomRotation = Random.Range(-rotaion, rotaion);
-            } while (randomRotation == 0);
-            transform.Rotate(0, 0, randomRotation);
+                Physics2D.IgnoreCollision(cart.GetComponent<Collider2D>(), GetComponent<Collider2D>());
+            }
         }
-        var rb = GetComponent<Rigidbody2D>();
-        rb.linearVelocity = Vector2.zero;
-        rb.angularVelocity = 0.0f;
-        _isFallen = false;
-        _verticalness = 0.0f;
-    }
 
-    private void IgnoreCollision()
-    {
-        var poles = GameObject.FindGameObjectsWithTag("Pole");
-        foreach (var pole in poles)
+        var allPoles = Resources.FindObjectsOfTypeAll<GameObject>();
+        foreach (var pole in allPoles)
         {
-            if (pole != gameObject)
+            if (pole.CompareTag("Pole") && pole != gameObject)
             {
                 Physics2D.IgnoreCollision(pole.GetComponent<Collider2D>(), GetComponent<Collider2D>());
             }
         }
+    }
+
+    public Rigidbody2D GetRigidbody()
+    {
+        return GetComponent<Rigidbody2D>();
     }
 }
