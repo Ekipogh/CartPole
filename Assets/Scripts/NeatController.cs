@@ -13,9 +13,9 @@ public class NeatController : MonoBehaviour
     // genetic algorithm settings
     private Dictionary<Neat, CartAndPole> _currentGeneration;
     private List<Neat> _deadSpecimens = new();
-    private const int _maxGenerations = 50;
+    private int _maxGenerations = 50;
     private int _currentGenerationIndex = 0;
-    private const int _populationSize = 50; // number of specimens in the current generation
+    private int _populationSize = 50; // number of specimens in the current generation
     private bool _currentGenerationIsFinished = false;
 
     private const int _championSize = 5; // number of specimens that will be preserved in the next generation
@@ -31,10 +31,11 @@ public class NeatController : MonoBehaviour
     public FollowCamera mainCamera;
 
     // statistics
-    private float _maxFitness = 0;
+    private float _maxFitness = 0; // max fitness of the whole session
 
     void Start()
     {
+        ParseArgs();
         InitGeneration();
         ResetStatistics();
     }
@@ -48,6 +49,29 @@ public class NeatController : MonoBehaviour
         Statistics();
     }
 
+    private void ParseArgs()
+    {
+        // Parse command line arguments
+        var args = System.Environment.GetCommandLineArgs();
+        foreach (var arg in args)
+        {
+            if (arg.StartsWith("-populationSize="))
+            {
+                if (int.TryParse(arg[16..], out int populationSize))
+                {
+                    _populationSize = populationSize;
+                }
+            }
+            else if (arg.StartsWith("-maxGenerations="))
+            {
+                if (int.TryParse(arg[16..], out int maxGenerations))
+                {
+                    _maxGenerations = maxGenerations;
+                }
+            }
+        }
+    }
+
     private void UpdateCamera()
     {
         if (_currentGeneration.Count > 0)
@@ -59,6 +83,8 @@ public class NeatController : MonoBehaviour
 
     private void InitGeneration()
     {
+        Debug.Log($"Population size: {_populationSize}");
+        Debug.Log($"Max generations: {_maxGenerations}");
         _currentGeneration = new Dictionary<Neat, CartAndPole>();
         _randomBias = Random.Range(-1.0f, 1.0f);
 
@@ -115,6 +141,14 @@ public class NeatController : MonoBehaviour
                     }
                 }
             }
+        }
+        else
+        {
+            // Training is finished
+            Debug.Log($"Training finished in {_maxGenerations} generations.");
+            Debug.Log($"Best specimen fitness: {absoluteBestSpecimen.Fitness}");
+            // Quit the application
+            Application.Quit();
         }
         if (specimensToRemove.Count > 0)
         {
