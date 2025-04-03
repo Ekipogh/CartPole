@@ -45,7 +45,7 @@ GameObject:
   - component: {fileID: 7092376579148831133}
   - component: {fileID: 1658839845709085615}
   m_Layer: 0
-  m_Name: Pole
+  m_Name: PolePrefab
   m_TagString: Pole
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -133,10 +133,10 @@ Rigidbody2D:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 982556798289994578}
   m_BodyType: 0
-  m_Simulated: 1
+  m_Simulated: 0
   m_UseFullKinematicContacts: 0
   m_UseAutoMass: 1
-  m_Mass: 3.188899
+  m_Mass: 1
   m_LinearDamping: 0
   m_AngularDamping: 0.05
   m_GravityScale: 1
@@ -203,6 +203,7 @@ MonoBehaviour:
   poleTopPoint: {fileID: 435895021836178139}
   poleMiddlePoint: {fileID: 8275428449046855710}
   poleBottomPoint: {fileID: 7617034957586546871}
+  ownCart: {fileID: 954256800022519054}
   rotaion: 3
 --- !u!1 &1689733343023178696
 GameObject:
@@ -391,12 +392,12 @@ GameObject:
   - component: {fileID: 2527955434851237503}
   - component: {fileID: 2682059085107673100}
   m_Layer: 0
-  m_Name: CartAndPole
+  m_Name: CartAndPolePrefab
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &2527955434851237503
 Transform:
   m_ObjectHideFlags: 0
@@ -504,7 +505,7 @@ GameObject:
   - component: {fileID: 954256800022519054}
   - component: {fileID: 4250309028874137411}
   m_Layer: 0
-  m_Name: Cart
+  m_Name: CartPrefab
   m_TagString: Cart
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -643,6 +644,7 @@ MonoBehaviour:
   rb: {fileID: 4250309028874137411}
   moveAmount: 355.854
   numberText: {fileID: 640367691939996530}
+  ownPole: {fileID: 1658839845709085615}
   speed: 5
 --- !u!50 &4250309028874137411
 Rigidbody2D:
@@ -656,7 +658,7 @@ Rigidbody2D:
   m_Simulated: 1
   m_UseFullKinematicContacts: 0
   m_UseAutoMass: 1
-  m_Mass: 3.2768
+  m_Mass: 1
   m_LinearDamping: 0
   m_AngularDamping: 0.05
   m_GravityScale: 1

@@ -2,18 +2,11 @@ using UnityEngine;
 
 public class Pole : MonoBehaviour
 {
-    private Vector3 _initialPosition;
-
     public Transform poleTopPoint;
     public Transform poleMiddlePoint;
     public Transform poleBottomPoint;
 
-    private float _verticalness = 0.0f; //how vertical the pole staid
-
-    public float Verticallness
-    {
-        get { return _verticalness; }
-    }
+    public Cart ownCart;
 
     private bool _isFallen = false;
 
@@ -27,32 +20,34 @@ public class Pole : MonoBehaviour
         return _isFallen;
     }
 
-    [Range(0.0f, 5.0f)]
-    public float rotaion = 0.0f;
-    void Start()
-    {
-        _initialPosition = transform.position;
-    }
-
     void OnEnable()
     {
         IgnoreCollision();
     }
 
-    void Update()
+    public void IgnoreCollision()
     {
-        _verticalness += transform.rotation.eulerAngles.z;
-    }
-
-    private void IgnoreCollision()
-    {
-        var poles = GameObject.FindGameObjectsWithTag("Pole");
-        foreach (var pole in poles)
+        var allCarts = Resources.FindObjectsOfTypeAll<GameObject>();
+        foreach (var cart in allCarts)
         {
-            if (pole != gameObject)
+            if (cart.CompareTag("Cart") && cart != ownCart.gameObject)
+            {
+                Physics2D.IgnoreCollision(cart.GetComponent<Collider2D>(), GetComponent<Collider2D>());
+            }
+        }
+
+        var allPoles = Resources.FindObjectsOfTypeAll<GameObject>();
+        foreach (var pole in allPoles)
+        {
+            if (pole.CompareTag("Pole") && pole != gameObject)
             {
                 Physics2D.IgnoreCollision(pole.GetComponent<Collider2D>(), GetComponent<Collider2D>());
             }
         }
+    }
+
+    public Rigidbody2D GetRigidbody()
+    {
+        return GetComponent<Rigidbody2D>();
     }
 }

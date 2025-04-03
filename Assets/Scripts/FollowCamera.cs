@@ -2,7 +2,19 @@ using UnityEngine;
 
 public class FollowCamera : MonoBehaviour
 {
-    public Transform target;
+    private Transform _target;
+    public Transform target
+    {
+        get => _target;
+        set
+        {
+            _target = value;
+            if (_target != null)
+            {
+                transform.position = new Vector3(_target.position.x, transform.position.y, transform.position.z);
+            }
+        }
+    }
     public float smoothSpeed = 0.125f;
 
     private float _zCoordinate;
@@ -17,7 +29,8 @@ public class FollowCamera : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        Vector3 desiredPosition = new Vector3(target.position.x, _yCoordinate, _zCoordinate);
+        if (_target == null) return;
+        Vector3 desiredPosition = new(target.position.x, _yCoordinate, _zCoordinate);
         Vector3 smoothedPosition = Vector3.Lerp(transform.position, desiredPosition, smoothSpeed);
         transform.position = smoothedPosition;
     }
