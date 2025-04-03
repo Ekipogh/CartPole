@@ -14,9 +14,9 @@ if __name__ == "__main__":
         if file.endswith(".json") and file != "best.json":
             with open(saved_specimen_directory + "/" + file, "r") as f:
                 specimen_data = json.load(f)
-                if "best" in file:
+                if "_best" in file:
                     best_fitness_values.append(specimen_data["fitness"])
-                if "worst" in file:
+                if "_worst" in file:
                     worst_fitness_values.append(specimen_data["fitness"])
     # Plot the fitness values
     plt.plot(best_fitness_values, label="Best Fitness")

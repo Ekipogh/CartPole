@@ -43,7 +43,28 @@ public class Neat
     private const float _enableDisableMutationRate = 0.1f;
 
     private bool _isDead = false;
-    public bool IsDead { get { return _isDead; } set { _isDead = value; } }
+    public bool IsDead
+    {
+        get { return _isDead; }
+        set
+        {
+            if (IsDead && value == false)
+            { // reset fitness and frames when the organism is revived
+                _fitness = 0;
+                _frames = 0;
+                _poleAngleSum = 0;
+                foreach (var node in _nodes)
+                {
+                    node.ResetVisits();
+                }
+                foreach (var connection in _connections)
+                {
+                    connection.ResetVisits();
+                }
+            }
+            _isDead = value;
+        }
+    }
 
     public Neat(int inputSize, int outputSize)
     {
@@ -254,7 +275,7 @@ public class Neat
             }
             else if (node1 != null)
             {
-                if (parent1Fitness > parent2Fitness)
+                if (parent1Fitness > parent2Fitness || (parent1Fitness == parent2Fitness && Random.value < 0.5f))
                 {
                     _nodes.Add(node1Copy);
                     if (node1Copy.Type == NodeType.Input)
@@ -269,7 +290,7 @@ public class Neat
             }
             else if (node2 != null)
             {
-                if (parent2Fitness > parent1Fitness)
+                if (parent2Fitness > parent1Fitness || (parent1Fitness == parent2Fitness && Random.value >= 0.5f))
                 {
                     _nodes.Add(node2Copy);
                     if (node2Copy.Type == NodeType.Input)
