@@ -16,12 +16,12 @@ public class NeatController : MonoBehaviour
     private const int _maxGenerations = 50;
     private int _currentGenerationIndex = 0;
     private const int _populationSize = 50; // number of specimens in the current generation
-    //private int _currentSpecimenIndex = 0;
-    //private bool _currentSpecimenIsDead = false;
     private bool _currentGenerationIsFinished = false;
 
     private const int _championSize = 5; // number of specimens that will be preserved in the next generation
     private const int _antichampionSize = 1; // number of worst specimens that will be saved in the next generation
+
+    private Neat absoluteBestSpecimen = null; // the best specimen of all generations
 
     public StatisticsSO statisticsSO;
     public NodeSO nodeSO;
@@ -29,6 +29,9 @@ public class NeatController : MonoBehaviour
     public CartAndPole cartAndPolePrefab;
 
     public FollowCamera mainCamera;
+
+    // statistics
+    private float _maxFitness = 0;
 
     void Start()
     {
@@ -50,7 +53,7 @@ public class NeatController : MonoBehaviour
         if (_currentGeneration.Count > 0)
         {
             var cartToFollow = _currentGeneration.First().Value.cart;
-            mainCamera.target = cartToFollow.transform;
+            mainCamera.Target = cartToFollow.transform;
         }
     }
 
@@ -199,6 +202,19 @@ public class NeatController : MonoBehaviour
     {
         // sort dead specimens by fitness
         _deadSpecimens.Sort((x, y) => y.Fitness.CompareTo(x.Fitness));
+        // update the absolute best specimen
+        if (absoluteBestSpecimen == null || _deadSpecimens.First().Fitness > absoluteBestSpecimen.Fitness)
+        {
+            absoluteBestSpecimen = _deadSpecimens.First();
+        }
+        // save the best and the worst specimens
+        if (_deadSpecimens.Count > 0)
+        {
+            var bestFileName = $"generation_{_currentGenerationIndex}_best.json";
+            var worstFileName = $"generation_{_currentGenerationIndex}_worst.json";
+            _deadSpecimens.First().Save(bestFileName);
+            _deadSpecimens.Last().Save(worstFileName);
+        }
         var newGeneration = new Dictionary<Neat, CartAndPole>();
         List<Neat> champions = _deadSpecimens.GetRange(0, _championSize); // first _championSize specimens are the best ones
         List<Neat> antichampions = _deadSpecimens.GetRange(_deadSpecimens.Count - _antichampionSize, _antichampionSize); // last _antichampionSize specimens are the worst ones
@@ -261,25 +277,24 @@ public class NeatController : MonoBehaviour
 
     private void Statistics()
     {
+        statisticsSO.SetGeneration(_currentGenerationIndex);
         if (_deadSpecimens.Count == 0) return;
         // Calculate continuous statistics
         float totalFitness = 0;
-        float maxFitness = float.MinValue;
         foreach (var specimen in _deadSpecimens)
         {
             totalFitness += specimen.Fitness;
-            if (specimen.Fitness > maxFitness)
+            if (specimen.Fitness > _maxFitness)
             {
-                maxFitness = specimen.Fitness;
+                _maxFitness = specimen.Fitness;
             }
         }
 
         float averageFitness = totalFitness / _deadSpecimens.Count;
 
-        statisticsSO.averageFitness = averageFitness;
-        statisticsSO.bestFitness = maxFitness;
-        statisticsSO.lastSpecimenFitness = _deadSpecimens.Last().Fitness;
-        statisticsSO.generation = _currentGenerationIndex;
+        statisticsSO.SetAverageFitness(averageFitness);
+        statisticsSO.SetBestFitness(_maxFitness);
+        statisticsSO.SetLastSpecimenFitness(_deadSpecimens.Last().Fitness);
     }
 
     private void ResetStatistics()
@@ -323,6 +338,21 @@ public class NeatController : MonoBehaviour
             var pole = cartAndPole.pole;
             cartAndPole.gameObject.SetActive(true);
             pole.GetRigidbody().simulated = true;
+        }
+    }
+
+    void OnApplicationQuit()
+    {
+        // Save the best specimen to a file
+        var timestamp = System.DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss");
+        string bestFileName = $"quit_{timestamp}.json";
+        if (absoluteBestSpecimen != null)
+        {
+            absoluteBestSpecimen.Save(bestFileName);
+        }
+        else
+        {
+            Debug.LogWarning("No best specimen to save on quit.");
         }
     }
 }

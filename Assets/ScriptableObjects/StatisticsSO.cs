@@ -4,9 +4,25 @@ using UnityEngine;
 public class StatisticsSO : ScriptableObject
 {
     public int generation = 0;
-    [Header("Average Fitness")]
     public float averageFitness = 0;
     public float bestFitness = 0;
     public float lastSpecimenFitness = 0;
-    
+
+    public void SetGeneration(int generation)
+    {
+        this.generation = generation;
+    }
+    public void SetAverageFitness(float averageFitness)
+    {
+        this.averageFitness = (float)System.Math.Round(averageFitness, 2);
+    }
+    public void SetBestFitness(float bestFitness)
+    {
+        this.bestFitness = (float)System.Math.Round(bestFitness, 2);
+    }
+    public void SetLastSpecimenFitness(float lastSpecimenFitness)
+    {
+        this.lastSpecimenFitness = (float)System.Math.Round(lastSpecimenFitness, 2);
+    }
+
 }
