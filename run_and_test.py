@@ -2,6 +2,7 @@ import os
 import json
 import subprocess
 
+
 def run_unity_app(population_size, generations):
     """
     Run the Unity app with the specified population size and generations.
@@ -12,9 +13,20 @@ def run_unity_app(population_size, generations):
         return
 
     try:
-        subprocess.Popen([unity_app_path, "-populationSize", str(population_size), "-generations", str(generations)])
+        proc = subprocess.Popen([unity_app_path, "-populationSize",
+                                str(population_size), "-generations", str(generations)])
+        proc.wait()  # Wait for the process to complete
+        if proc.returncode != 0:
+            print(f"Unity app exited with code {proc.returncode}.")
+        else:
+            print("Unity app ran successfully.")
+    except FileNotFoundError:
+        print(f"Unity app executable not found at {unity_app_path}.")
+    except subprocess.CalledProcessError as e:
+        print(f"Error running Unity app: {e}")
     except Exception as e:
         print(f"Failed to start Unity app: {e}")
+
 
 def run_test():
     saved_specimen_dir = os.path.join("CartPole", "SavedSpecimen")
@@ -30,6 +42,7 @@ def run_test():
                 if fitness > best_fintess:
                     best_fintess = fitness
     print(f"Best fitness from saved specimens: {best_fintess}")
+
 
 if __name__ == "__main__":
 
