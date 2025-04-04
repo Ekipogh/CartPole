@@ -1,5 +1,6 @@
 import os
 import json
+import argparse
 import subprocess
 
 
@@ -44,10 +45,21 @@ def run_test():
     print(f"Best fitness from saved specimens: {best_fintess}")
 
 
+def parse_args():
+    parser = argparse.ArgumentParser(
+        description="Run Unity app and test saved specimens.")
+    parser.add_argument("-p", "--population_size", type=int, default=50,
+                        help="Population size for the Unity app.")
+    parser.add_argument("-g", "--generations", type=int, default=50,
+                        help="Number of generations for the Unity app.")
+    return parser.parse_args()
+
+
 if __name__ == "__main__":
 
-    population_size = 50
-    generations = 50
+    args = parse_args()
+    population_size = args.population_size
+    generations = args.generations
 
     # run the unity app
     run_unity_app(population_size, generations)
