@@ -29,7 +29,7 @@ def run_unity_app(population_size, generations):
 
 
 def run_test():
-    saved_specimen_dir = os.path.join("CartPole", "SavedSpecimen")
+    saved_specimen_dir = "SavedSpecimen"
     if not os.path.exists(saved_specimen_dir):
         print(f"Saved specimen directory not found at {saved_specimen_dir}.")
         return
