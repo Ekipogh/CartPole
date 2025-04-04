@@ -3,6 +3,10 @@ import json
 import argparse
 import subprocess
 
+import numpy as np
+from scipy.stats import linregress
+from scipy.signal import find_peaks
+
 
 def run_unity_app(population_size, generations):
     """
@@ -30,19 +34,61 @@ def run_unity_app(population_size, generations):
 
 
 def run_test():
-    saved_specimen_dir = "SavedSpecimen"
-    if not os.path.exists(saved_specimen_dir):
-        print(f"Saved specimen directory not found at {saved_specimen_dir}.")
+    best_json_path = os.path.join("SavedSpecimen", "best.json")
+    if not os.path.exists(best_json_path):
+        print(f"Best specimen JSON file not found at {best_json_path}.")
         return
-    best_fintess = 0
-    for file in os.listdir(saved_specimen_dir):
-        if file.endswith(".json"):
-            with open(os.path.join(saved_specimen_dir, file), 'r') as f:
+    best_fitness = json.load(open(best_json_path, "r"))["fitness"]
+    print(f"Best fitness from JSON file: {best_fitness}")
+    # collect fiteness of all specimens
+    fitness_data = []
+    for filename in os.listdir("SavedSpecimen"):
+        if filename.endswith("_best.json") and filename != "best.json":
+            with open(os.path.join("SavedSpecimen", filename), "r") as f:
                 data = json.load(f)
-                fitness = data.get('fitness', 0)
-                if fitness > best_fintess:
-                    best_fintess = fitness
-    print(f"Best fitness from saved specimens: {best_fintess}")
+                fitness_data.append(data["fitness"])
+    analyze_fitness(fitness_data)
+    analyze_trend(fitness_data)
+    detect_peaks(fitness_data)
+
+
+def analyze_fitness(fitness_data):
+    """
+    Analyze the fitness data of the specimens.
+    """
+    fitness_data = np.array(fitness_data)
+    mean_fitness = np.mean(fitness_data)
+    median_fitness = np.median(fitness_data)
+    std_fitness = np.std(fitness_data)
+    min_fitness = np.min(fitness_data)
+    max_fitness = np.max(fitness_data)
+
+    print("Fitness Analysis:")
+    print(f"Mean: {mean_fitness}")
+    print(f"Median: {median_fitness}")
+    print(f"Standard Deviation: {std_fitness}")
+    print(f"Minimum: {min_fitness}")
+    print(f"Maximum: {max_fitness}")
+
+
+def analyze_trend(fitness_data):
+    generations = range(len(fitness_data))
+    slope, intercept, r_value, p_value, std_err = linregress(
+        generations, fitness_data)
+    print(f"Slope: {slope}, R-squared: {r_value**2}")
+    if slope > 0:
+        print("Fitness is improving over generations.")
+    elif slope < 0:
+        print("Fitness is declining over generations.")
+    else:
+        print("No significant trend.")
+
+
+def detect_peaks(fitness_data):
+    peaks, _ = find_peaks(fitness_data, height=0)
+    print(f"Detected peaks at generations: {peaks}")
+    for peak in peaks:
+        print(f"Peak fitness at generation {peak}: {fitness_data[peak]}")
 
 
 def parse_args():

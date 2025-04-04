@@ -244,8 +244,8 @@ public class NeatController : MonoBehaviour
         // save the best and the worst specimens
         if (_deadSpecimens.Count > 0)
         {
-            var bestFileName = $"generation_{_currentGenerationIndex}_best.json";
-            var worstFileName = $"generation_{_currentGenerationIndex}_worst.json";
+            var bestFileName = $"generation_{_currentGenerationIndex}_best";
+            var worstFileName = $"generation_{_currentGenerationIndex}_worst";
             _deadSpecimens.First().Save(bestFileName);
             _deadSpecimens.Last().Save(worstFileName);
         }
@@ -379,7 +379,7 @@ public class NeatController : MonoBehaviour
     {
         // Save the best specimen to a file
         var timestamp = System.DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss");
-        string bestFileName = $"quit_{timestamp}.json";
+        string bestFileName = $"quit_{timestamp}";
         if (absoluteBestSpecimen != null)
         {
             absoluteBestSpecimen.Save(bestFileName);
