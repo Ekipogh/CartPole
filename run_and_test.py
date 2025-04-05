@@ -189,7 +189,7 @@ if __name__ == "__main__":
     generations = args.generations
 
     # run the unity app
-    # run_unity_app(population_size, generations)
+    run_unity_app(population_size, generations)
     # run the test script
     report_data = run_test()
     report_html(report_data, "report.html")
