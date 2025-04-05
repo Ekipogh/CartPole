@@ -102,7 +102,7 @@ def analyze_trend(fitness_data: list) -> dict:
     trend_data = {
         "slope": float(slope),
         "intercept": float(intercept),
-        "r_value": float(r_value),
+        "r_squared": float(r_value ** 2),
         "p_value": float(p_value),
         "std_err": float(std_err),
         "trend": trend_string,

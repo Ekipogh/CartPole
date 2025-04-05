@@ -29,7 +29,11 @@
         }
 
         th {
-            background-color: #f2f2f2;
+            background-color: #d9d9d9;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
         }
     </style>
 </head>
@@ -87,15 +91,45 @@
     </table>
 
     <h3>Slope Analysis</h3>
-    <div>
-        Slope: {{ report_data.slope }}, R-Value: {{ report_data.r_value }}
-    </div>
-    <div>
+    <table border="1" cellpadding="5" cellspacing="0">
+        <tr>
+            <th>Parameter</th>
+            <th>Value</th>
+            <th>Description</th>
+        </tr>
+        <tr>
+            <th>Slope</th>
+            <td>{{ report_data.slope }}</td>
+            <td>Represents the rate of change of the dependent variable with respect to the independent variable.</td>
+        </tr>
+        <tr>
+            <th>Intercept</th>
+            <td>{{ report_data.intercept }}</td>
+            <td>It indicates the starting value of the dependent variable.</td>
+        </tr>
+        <tr>
+            <th>R-squared</th>
+            <td>{{ report_data.r_squared }}</td>
+            <td>Indicates the proportion of the variance in the dependent variable that is predictable from the
+                independent variable(s).</td>
+        </tr>
+        <tr>
+            <th>P-value</th>
+            <td>{{ report_data.p_value }}</td>
+            <td>Indicates the probability of observing the results assuming the null hypothesis is true.</td>
+        </tr>
+        <tr>
+            <th>Standard Error</th>
+            <td>{{ report_data.std_err }}</td>
+            <td>Represents the standard deviation of the sampling distribution of a statistic, commonly the mean.</td>
+        </tr>
+    </table>
+    <p>
         Fitness is {{ report_data.trend }} over generations.
-    </div>
+    </p>
 
     <h3> Impovement rate </h3>
-    <div> Improvement rate mean: {{ report_data.improvement_rate_mean }} </div>
+    <p> Fitness improves by : {{ report_data.improvement_rate_mean }} on average per generation </p>
     <canvas id="improvementChart" width="400" height="200"></canvas>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
@@ -104,38 +138,38 @@
             type: 'bar',
             data: {
                 labels: {{ report_data.improvement_rate_labels }}, // Replace with an array of generation labels
-                datasets: [{
-                    label: 'Improvement Rate',
-                    data: {{ report_data.improvement_rate }}, // Replace with an array of improvement rate values
-                    backgroundColor: 'rgba(54, 162, 235, 0.2)',
-                    borderColor: 'rgba(54, 162, 235, 1)',
-                    borderWidth: 1
+        datasets: [{
+            label: 'Improvement Rate',
+            data: {{ report_data.improvement_rate }}, // Replace with an array of improvement rate values
+            backgroundColor: 'rgba(54, 162, 235, 0.2)',
+            borderColor: 'rgba(54, 162, 235, 1)',
+            borderWidth: 1
                 }]
             },
-            options: {
-                responsive: true,
+        options: {
+            responsive: true,
                 plugins: {
-                    legend: {
-                        display: true,
+                legend: {
+                    display: true,
                         position: 'top'
+                }
+            },
+            scales: {
+                x: {
+                    title: {
+                        display: true,
+                            text: 'Generations'
                     }
                 },
-                scales: {
-                    x: {
-                        title: {
-                            display: true,
-                            text: 'Generations'
-                        }
-                    },
-                    y: {
-                        title: {
-                            display: true,
+                y: {
+                    title: {
+                        display: true,
                             text: 'Improvement Rate'
-                        },
-                        beginAtZero: true
-                    }
+                    },
+                    beginAtZero: true
                 }
             }
+        }
         });
     </script>
 
