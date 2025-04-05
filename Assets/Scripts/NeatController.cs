@@ -1,6 +1,8 @@
 using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
+using Newtonsoft.Json;
+using UnityEditor;
 
 public class NeatController : MonoBehaviour
 {
@@ -13,9 +15,9 @@ public class NeatController : MonoBehaviour
     // genetic algorithm settings
     private Dictionary<Neat, CartAndPole> _currentGeneration;
     private List<Neat> _deadSpecimens = new();
-    private const int _maxGenerations = 50;
+    private int _maxGenerations = 50;
     private int _currentGenerationIndex = 0;
-    private const int _populationSize = 50; // number of specimens in the current generation
+    private int _populationSize = 50; // number of specimens in the current generation
     private bool _currentGenerationIsFinished = false;
 
     private const int _championSize = 5; // number of specimens that will be preserved in the next generation
@@ -30,11 +32,12 @@ public class NeatController : MonoBehaviour
 
     public FollowCamera mainCamera;
 
-    // statistics
-    private float _maxFitness = 0;
+    // history
+    private List<List<float>> _trainingHistory = new();
 
     void Start()
     {
+        ParseArgs();
         InitGeneration();
         ResetStatistics();
     }
@@ -48,6 +51,29 @@ public class NeatController : MonoBehaviour
         Statistics();
     }
 
+    private void ParseArgs()
+    {
+        // Parse command line arguments
+        var args = System.Environment.GetCommandLineArgs();
+        foreach (var arg in args)
+        {
+            if (arg.StartsWith("-populationSize="))
+            {
+                if (int.TryParse(arg[16..], out int populationSize))
+                {
+                    _populationSize = populationSize;
+                }
+            }
+            else if (arg.StartsWith("-maxGenerations="))
+            {
+                if (int.TryParse(arg[16..], out int maxGenerations))
+                {
+                    _maxGenerations = maxGenerations;
+                }
+            }
+        }
+    }
+
     private void UpdateCamera()
     {
         if (_currentGeneration.Count > 0)
@@ -59,6 +85,8 @@ public class NeatController : MonoBehaviour
 
     private void InitGeneration()
     {
+        Debug.Log($"Population size: {_populationSize}");
+        Debug.Log($"Max generations: {_maxGenerations}");
         _currentGeneration = new Dictionary<Neat, CartAndPole>();
         _randomBias = Random.Range(-1.0f, 1.0f);
 
@@ -95,6 +123,7 @@ public class NeatController : MonoBehaviour
             // evolve the generation if the current generation is finished
             if (_currentGenerationIsFinished)
             {
+                UpdateHistory();
                 Evolution();
                 EnableCartPolePhysics();
             }
@@ -115,6 +144,21 @@ public class NeatController : MonoBehaviour
                     }
                 }
             }
+        }
+        else
+        {
+            // Training is finished
+            Debug.Log($"Training finished in {_maxGenerations} generations.");
+            Debug.Log($"Best specimen fitness: {absoluteBestSpecimen.Fitness}");
+            // Save training history
+            SaveTrainingHistory();
+            // Quit the application
+            #if UNITY_EDITOR
+            EditorApplication.isPlaying = false; // Stops play mode in the Unity Editor
+            #else
+            Application.Quit(); // Quits the application in a built version
+            #endif
+            return;
         }
         if (specimensToRemove.Count > 0)
         {
@@ -210,8 +254,8 @@ public class NeatController : MonoBehaviour
         // save the best and the worst specimens
         if (_deadSpecimens.Count > 0)
         {
-            var bestFileName = $"generation_{_currentGenerationIndex}_best.json";
-            var worstFileName = $"generation_{_currentGenerationIndex}_worst.json";
+            var bestFileName = $"generation_{_currentGenerationIndex}_best";
+            var worstFileName = $"generation_{_currentGenerationIndex}_worst";
             _deadSpecimens.First().Save(bestFileName);
             _deadSpecimens.Last().Save(worstFileName);
         }
@@ -281,28 +325,26 @@ public class NeatController : MonoBehaviour
         if (_deadSpecimens.Count == 0) return;
         // Calculate continuous statistics
         float totalFitness = 0;
+        float maxFitness = 0;
         foreach (var specimen in _deadSpecimens)
         {
             totalFitness += specimen.Fitness;
-            if (specimen.Fitness > _maxFitness)
+            if (specimen.Fitness > maxFitness)
             {
-                _maxFitness = specimen.Fitness;
+                maxFitness = specimen.Fitness;
             }
         }
 
         float averageFitness = totalFitness / _deadSpecimens.Count;
 
         statisticsSO.SetAverageFitness(averageFitness);
-        statisticsSO.SetBestFitness(_maxFitness);
+        statisticsSO.AttemptToSetMaxFitness(maxFitness);
         statisticsSO.SetLastSpecimenFitness(_deadSpecimens.Last().Fitness);
     }
 
     private void ResetStatistics()
     {
-        statisticsSO.averageFitness = 0;
-        statisticsSO.bestFitness = 0;
-        statisticsSO.lastSpecimenFitness = 0;
-        statisticsSO.generation = 0;
+        statisticsSO.ResetStatistics();
     }
 
     private bool LoadBest()
@@ -345,7 +387,7 @@ public class NeatController : MonoBehaviour
     {
         // Save the best specimen to a file
         var timestamp = System.DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss");
-        string bestFileName = $"quit_{timestamp}.json";
+        string bestFileName = $"quit_{timestamp}";
         if (absoluteBestSpecimen != null)
         {
             absoluteBestSpecimen.Save(bestFileName);
@@ -354,5 +396,29 @@ public class NeatController : MonoBehaviour
         {
             Debug.LogWarning("No best specimen to save on quit.");
         }
+    }
+
+    private void UpdateHistory()
+    {
+        // update the training history with the current generation fitnesses
+        var fitnesses = _deadSpecimens.Select(x => x.Fitness).ToList();
+        // save the best fitness of the current generation
+        var bestFitness = fitnesses.Max();
+        _trainingHistory.Add(fitnesses);
+    }
+
+    private void SaveTrainingHistory()
+    {
+        var savedSpecimenDirectory = "SavedSpecimen";
+        // Check if the directory exists, if not create it
+        if (!System.IO.Directory.Exists(savedSpecimenDirectory))
+        {
+            System.IO.Directory.CreateDirectory(savedSpecimenDirectory);
+        }
+        // Save the training history to a file
+        var json = JsonConvert.SerializeObject(_trainingHistory, Formatting.Indented);
+        var filePath = System.IO.Path.Combine(savedSpecimenDirectory, "training_history.json");
+        System.IO.File.WriteAllText(filePath, json);
+        Debug.Log($"Training history saved to {filePath}");
     }
 }

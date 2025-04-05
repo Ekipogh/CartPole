@@ -25,4 +25,20 @@ public class StatisticsSO : ScriptableObject
         this.lastSpecimenFitness = (float)System.Math.Round(lastSpecimenFitness, 2);
     }
 
+    public void AttemptToSetMaxFitness(float fitness)
+    {
+        if (fitness > bestFitness)
+        {
+            SetBestFitness(fitness);
+        }
+    }
+
+    public void ResetStatistics()
+    {
+        generation = 0;
+        averageFitness = 0;
+        bestFitness = 0;
+        lastSpecimenFitness = 0;
+    }
+
 }
