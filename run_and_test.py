@@ -21,7 +21,7 @@ def run_unity_app(population_size, generations):
 
     try:
         proc = subprocess.Popen(
-            [unity_app_path, f"-populationSize={population_size}", f"-generations={generations}"])
+            [unity_app_path, f"-populationSize={population_size}", f"-maxGenerations={generations}"])
         proc.wait()  # Wait for the process to complete
         if proc.returncode != 0:
             print(f"Unity app exited with code {proc.returncode}.")
