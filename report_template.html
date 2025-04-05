@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Data Analysis Report">
+    <title>Data Analysis Report</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+
+        h1 {
+            text-align: center;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            padding: 10px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+
+<body>
+    <h3>
+        Data Analysis Report
+    </h3>
+    <table border="1" cellpadding="5" cellspacing="0">
+        <tr>
+            <th colspan="2">Fitness Analysis:</th>
+        </tr>
+        <tr>
+            <td>Mean:</td>
+            <td>{{ report_data.mean }}</td>
+        </tr>
+        <tr>
+            <td>Median:</td>
+            <td>{{ report_data.median }}</td>
+        </tr>
+        <tr>
+            <td>Standard Deviation:</td>
+            <td>{{ report_data.std }}</td>
+        </tr>
+        <tr>
+            <td>Minimum:</td>
+            <td>{{ report_data.min }}</td>
+        </tr>
+        <tr>
+            <td>Maximum:</td>
+            <td>{{ report_data.max }}</td>
+        </tr>
+    </table>
+
+    <h3> Data per generation </h3>
+    <table border="1" cellpadding="5" cellspacing="0">
+        <tr>
+            <th>Generation</th>
+            <th>Mean</th>
+            <th>Median</th>
+            <th>Standard Deviation</th>
+            <th>Minimum</th>
+            <th>Maximum</th>
+        </tr>
+        {% for generation in report_data.generations_report %}
+        <tr>
+            <td>{{ generation.generation }}</td>
+            <td>{{ generation.mean }}</td>
+            <td>{{ generation.median }}</td>
+            <td>{{ generation.std }}</td>
+            <td>{{ generation.min }}</td>
+            <td>{{ generation.max }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+
+    <h3>Slope Analysis</h3>
+    <div>
+        Slope: {{ report_data.slope }}, R-Value: {{ report_data.r_value }}
+    </div>
+    <div>
+        Fitness is {{ report_data.trend }} over generations.
+    </div>
+
+    <h3> Impovement rate </h3>
+    <div> Improvement rate mean: {{ report_data.improvement_rate_mean }} </div>
+    <canvas id="improvementChart" width="400" height="200"></canvas>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        const improvementCtx = document.getElementById('improvementChart').getContext('2d');
+        const improvementChart = new Chart(improvementCtx, {
+            type: 'bar',
+            data: {
+                labels: {{ report_data.improvement_rate_labels }}, // Replace with an array of generation labels
+                datasets: [{
+                    label: 'Improvement Rate',
+                    data: {{ report_data.improvement_rate }}, // Replace with an array of improvement rate values
+                    backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top'
+                    }
+                },
+                scales: {
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Generations'
+                        }
+                    },
+                    y: {
+                        title: {
+                            display: true,
+                            text: 'Improvement Rate'
+                        },
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    </script>
+
+    <h3> Best Fitness chart </h3>
+
+    <canvas id="fitnessChart" width="400" height="200"></canvas>
+    <script>
+        const ctx = document.getElementById('fitnessChart').getContext('2d');
+        const fitnessChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: {{ report_data.generation_labels }}, // Replace with an array of generation labels
+        datasets: [{
+            label: 'Fitness Over Generations',
+            data: {{ report_data.fitness_data }}, // Replace with an array of fitness values
+            borderColor: 'rgba(75, 192, 192, 1)',
+            backgroundColor: 'rgba(75, 192, 192, 0.2)',
+            borderWidth: 2,
+            fill: true,
+            trendlineLinear: {
+            style: "rgba(255, 0, 0, 1)",
+            lineStyle: "solid",
+            width: 2
+        }
+                }]
+            },
+        options: {
+            responsive: true,
+                plugins: {
+                legend: {
+                    display: true,
+                        position: 'top'
+                }
+            },
+            scales: {
+                x: {
+                    title: {
+                        display: true,
+                            text: 'Generations'
+                    }
+                },
+                y: {
+                    title: {
+                        display: true,
+                            text: 'Fitness'
+                    },
+                    beginAtZero: true
+                }
+            }
+        }
+        });
+    </script>
+
+    <h3> Peaks </h3>
+    <div> Number of peaks: {{ report_data.num_peaks }} </div>
+    <table border="1" cellpadding="5" cellspacing="0">
+        <tr>
+            <th>Generation</th>
+            <th>Fitness</th>
+        </tr>
+        {% for peak in report_data.peaks %}
+        <tr>
+            <td>{{ peak.index }}</td>
+            <td>{{ peak.value }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</body>
+
+</html>
