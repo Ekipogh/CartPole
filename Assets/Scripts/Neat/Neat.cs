@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Newtonsoft.Json;
 using UnityEngine;
+
 public class NeatData
 {
     public float fitness;
@@ -171,8 +172,8 @@ public class Neat
                 connectionIdMax = id;
             }
         }
-        Sequencer.Instance.SetNodeIdMax(nodeIdMax);
-        Sequencer.Instance.SetConnectionIdMax(connectionIdMax);
+        Sequencer.Instance.SetNodeIdMax(nodeIdMax + 1);
+        Sequencer.Instance.SetConnectionIdMax(connectionIdMax + 1);
     }
 
     public Neat()
@@ -406,17 +407,20 @@ public class Neat
         var newNode = new Node(NodeType.Hidden);
         _nodes.Add(newNode);
 
-        var weight1 = Random.Range(-1.0f, 1.0f);
-        var connection1 = new Connection(connection.FromNode, newNode, weight1);
-        _connections.Add(connection1);
-        connection.FromNode.AddOutConnection(connection1);
-        newNode.AddInConnection(connection1);
+        var FromNode = connection.FromNode;
+        var ToNode = connection.ToNode;
 
-        var weight2 = Random.Range(-1.0f, 1.0f);
-        var connection2 = new Connection(newNode, connection.ToNode, weight2);
-        _connections.Add(connection2);
-        newNode.AddOutConnection(connection2);
-        connection.ToNode.AddInConnection(connection2);
+        var weightFrom = Random.Range(-1.0f, 1.0f);
+        var connectionFrom = new Connection(FromNode, newNode, weightFrom);
+        _connections.Add(connectionFrom);
+        FromNode.AddOutConnection(connectionFrom);
+        newNode.AddInConnection(connectionFrom);
+
+        var weightTo = Random.Range(-1.0f, 1.0f);
+        var connectionTo = new Connection(newNode, ToNode, weightTo);
+        _connections.Add(connectionTo);
+        newNode.AddOutConnection(connectionTo);
+        ToNode.AddInConnection(connectionTo);
     }
 
     private void MutateAddConnection()
