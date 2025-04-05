@@ -15,9 +15,9 @@ public class NeatController : MonoBehaviour
     // genetic algorithm settings
     private Dictionary<Neat, CartAndPole> _currentGeneration;
     private List<Neat> _deadSpecimens = new();
-    private int _maxGenerations = 10;
+    private int _maxGenerations = 50;
     private int _currentGenerationIndex = 0;
-    private int _populationSize = 10; // number of specimens in the current generation
+    private int _populationSize = 50; // number of specimens in the current generation
     private bool _currentGenerationIsFinished = false;
 
     private const int _championSize = 5; // number of specimens that will be preserved in the next generation
