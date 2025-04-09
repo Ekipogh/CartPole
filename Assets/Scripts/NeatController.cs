@@ -4,7 +4,7 @@ using System.Linq;
 using Newtonsoft.Json;
 using UnityEditor;
 
-public class NeatController : MonoBehaviour
+public class CartNeatController : MonoBehaviour
 {
     // NEAT settings
     private float _randomBias;
@@ -13,8 +13,8 @@ public class NeatController : MonoBehaviour
     private const int _outputSize = 1;
 
     // genetic algorithm settings
-    private Dictionary<Neat, CartAndPole> _currentGeneration;
-    private List<Neat> _deadSpecimens = new();
+    private Dictionary<CartNeat, CartAndPole> _currentGeneration;
+    private List<CartNeat> _deadSpecimens = new();
     private int _maxGenerations = 50;
     private int _currentGenerationIndex = 0;
     private int _populationSize = 50; // number of specimens in the current generation
@@ -23,7 +23,7 @@ public class NeatController : MonoBehaviour
     private const int _championSize = 5; // number of specimens that will be preserved in the next generation
     private const int _antichampionSize = 1; // number of worst specimens that will be saved in the next generation
 
-    private Neat absoluteBestSpecimen = null; // the best specimen of all generations
+    private CartNeat absoluteBestSpecimen = null; // the best specimen of all generations
 
     public StatisticsSO statisticsSO;
     public NodeSO nodeSO;
@@ -46,7 +46,7 @@ public class NeatController : MonoBehaviour
     void Update()
     {
         ManageTraining();
-        NeatThink();
+        CartNeatThink();
         UpdateCamera();
         Statistics();
     }
@@ -87,7 +87,7 @@ public class NeatController : MonoBehaviour
     {
         Debug.Log($"Population size: {_populationSize}");
         Debug.Log($"Max generations: {_maxGenerations}");
-        _currentGeneration = new Dictionary<Neat, CartAndPole>();
+        _currentGeneration = new Dictionary<CartNeat, CartAndPole>();
         _randomBias = Random.Range(-1.0f, 1.0f);
 
         // Attempt to load the best specimen from a saved file
@@ -97,7 +97,7 @@ public class NeatController : MonoBehaviour
         for (int i = bestSpecimenLoaded ? 1 : 0; i < _populationSize; i++)
         {
             // Create a new NEAT specimen
-            var newSpecimen = new Neat(_inputSize, _outputSize);
+            var newSpecimen = new CartNeat(_inputSize, _outputSize);
 
             var cartAndPole = InstantiateCartAndPole(i);
 
@@ -117,7 +117,7 @@ public class NeatController : MonoBehaviour
 
     private void ManageTraining()
     {
-        List<Neat> specimensToRemove = new();
+        List<CartNeat> specimensToRemove = new();
         if (_currentGenerationIndex < _maxGenerations)
         {
             // evolve the generation if the current generation is finished
@@ -153,11 +153,11 @@ public class NeatController : MonoBehaviour
             // Save training history
             SaveTrainingHistory();
             // Quit the application
-            #if UNITY_EDITOR
+#if UNITY_EDITOR
             EditorApplication.isPlaying = false; // Stops play mode in the Unity Editor
-            #else
+#else
             Application.Quit(); // Quits the application in a built version
-            #endif
+#endif
             return;
         }
         if (specimensToRemove.Count > 0)
@@ -172,7 +172,7 @@ public class NeatController : MonoBehaviour
         }
     }
 
-    void NeatThink()
+    void CartNeatThink()
     {
         var first = true;
         foreach (var kvp in _currentGeneration)
@@ -259,9 +259,9 @@ public class NeatController : MonoBehaviour
             _deadSpecimens.First().Save(bestFileName);
             _deadSpecimens.Last().Save(worstFileName);
         }
-        var newGeneration = new Dictionary<Neat, CartAndPole>();
-        List<Neat> champions = _deadSpecimens.GetRange(0, _championSize); // first _championSize specimens are the best ones
-        List<Neat> antichampions = _deadSpecimens.GetRange(_deadSpecimens.Count - _antichampionSize, _antichampionSize); // last _antichampionSize specimens are the worst ones
+        var newGeneration = new Dictionary<CartNeat, CartAndPole>();
+        List<CartNeat> champions = _deadSpecimens.GetRange(0, _championSize); // first _championSize specimens are the best ones
+        List<CartNeat> antichampions = _deadSpecimens.GetRange(_deadSpecimens.Count - _antichampionSize, _antichampionSize); // last _antichampionSize specimens are the worst ones
         for (int i = 0; i < _championSize; i++)
         {
             CartAndPole cartAndPole = InstantiateCartAndPole(i);
@@ -296,8 +296,18 @@ public class NeatController : MonoBehaviour
             cartAndPole.pole.transform.rotation = RandomizeRotation();
             // set the cart number to the best specimen index
             cartAndPole.cart.SetNumber(i);
-            newGeneration.Add(child, cartAndPole);
+            newGeneration.Add((CartNeat)child, cartAndPole);
             j++;
+        }
+        // reset the champions
+        foreach (var specimen in champions)
+        {
+            specimen.Reset();
+        }
+        // reset the antichampions
+        foreach (var specimen in antichampions)
+        {
+            specimen.Reset();
         }
         _deadSpecimens.Clear();
         _currentGeneration = newGeneration;
@@ -352,7 +362,7 @@ public class NeatController : MonoBehaviour
         const string bestFilePath = "SavedSpecimen/best.json";
         if (System.IO.File.Exists(bestFilePath))
         {
-            var best = Neat.Load(bestFilePath);
+            CartNeat best = Neat.Load<CartNeat>(bestFilePath);
             var cartAndPole = InstantiateCartAndPole(0);
             // Randomize the initial rotation of the pole
             var poleRotation = RandomizeRotation();
