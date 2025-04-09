@@ -25,6 +25,7 @@ class CartNeat : Neat
         {
             return 1; // Default value when no frames have been processed
         }
+        return 1 - Mathf.Abs(_poleAngleSum / _frames) / 180;
     }
 
     public override float CalculateFitness()
