@@ -21,7 +21,10 @@ class CartNeat : Neat
 
     private float CalculatePoleStraightness()
     {
-        return 1 - Mathf.Abs(_poleAngleSum / _frames) / 180;
+        if (_frames == 0)
+        {
+            return 1; // Default value when no frames have been processed
+        }
     }
 
     public override float CalculateFitness()
