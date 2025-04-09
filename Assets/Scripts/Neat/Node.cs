@@ -130,4 +130,9 @@ public class Node
             connection.ResetVisits();
         }
     }
+
+    public override string ToString()
+    {
+        return $"Node: {Id} {Type}";
+    }
 }

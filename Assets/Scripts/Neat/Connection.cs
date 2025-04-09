@@ -57,4 +57,9 @@ public class Connection
     {
         _visits = 0;
     }
+
+    public override string ToString()
+    {
+        return $"Connection {Id}: {FromNode.Id} {ToNode.Id} {Weight} {Enabled}";
+    }
 }

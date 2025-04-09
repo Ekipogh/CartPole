@@ -1,7 +1,10 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Newtonsoft.Json;
 using UnityEngine;
+using Random = UnityEngine.Random;
+
 public class NeatData
 {
     public float fitness;
@@ -30,13 +33,8 @@ public class Neat
     protected List<Node> _inputs;
     private List<Node> _outputs;
     private List<Connection> _connections;
-    private long _frames = 0;
-
     private float _fitness = 0;
     public float Fitness { get { return _fitness; } }
-
-    private float _poleAngleSum;
-
     private const float _addNodeMutationRate = 0.1f;
     private const float _addConnectionMutationRate = 0.1f;
     private const float _weightMutationRate = 0.8f;
@@ -46,24 +44,7 @@ public class Neat
     public bool IsDead
     {
         get { return _isDead; }
-        set
-        {
-            if (IsDead && value == false)
-            { // reset fitness and frames when the organism is revived
-                _fitness = 0;
-                _frames = 0;
-                _poleAngleSum = 0;
-                foreach (var node in _nodes)
-                {
-                    node.ResetVisits();
-                }
-                foreach (var connection in _connections)
-                {
-                    connection.ResetVisits();
-                }
-            }
-            _isDead = value;
-        }
+        set { _isDead = value; }
     }
 
     public Neat(int inputSize, int outputSize)
@@ -171,8 +152,8 @@ public class Neat
                 connectionIdMax = id;
             }
         }
-        Sequencer.Instance.SetNodeIdMax(nodeIdMax);
-        Sequencer.Instance.SetConnectionIdMax(connectionIdMax);
+        Sequencer.Instance.SetNodeIdMax(nodeIdMax + 1);
+        Sequencer.Instance.SetConnectionIdMax(connectionIdMax + 1);
     }
 
     public Neat()
@@ -195,15 +176,12 @@ public class Neat
         {
             output.Add(outputNode.CalculateValue());
         }
-        _frames++;
+        Update();
         return output;
     }
 
-    public void Start()
+    public virtual void Update()
     {
-        _fitness = 0;
-        _frames = 0;
-        _poleAngleSum = 0;
     }
 
     public void Dead(float fitnessBonus = 0.0f)
@@ -213,104 +191,44 @@ public class Neat
         _isDead = true;
     }
 
-    public float CalculateFitness()
+    public virtual float CalculateFitness()
     {
-        var pole_straightness = 1 - Mathf.Abs(_poleAngleSum / _frames) / 180;
-        var fitness = _frames / 100.0f * pole_straightness;
-        return fitness;
+        return 0;
     }
 
-    public Neat Crossover(Neat other)
+    private bool CheckOrphanedNodes()
     {
-        var child = new Neat();
-        child.InheritNodes(this, other);
-        child.InheritConnections(this, other);
-        child.Mutate();
+        var orphanedNodes = new List<Node>();
+        foreach (var node in _nodes)
+        {
+            if (node.InConnections.Count == 0 && node.OutConnections.Count == 0)
+            {
+                orphanedNodes.Add(node);
+            }
+        }
+        return orphanedNodes.Count > 0;
+    }
 
+    public T Crossover<T>(Neat other) where T : Neat, new()
+    {
+        var child = new T();
+        child.InheritGenes(this, other);
+        child.Mutate();
         return child;
     }
 
-    private void InheritNodes(Neat parent1, Neat parent2)
-    {
-        var parent1Fitness = parent1._fitness;
-        var parent2Fitness = parent2._fitness;
-        // compile all nodes from both parents
-        // id: (parent1Node|null, parent2Node|null)
-        var nodes = new Dictionary<int, (Node, Node)>();
-        foreach (var node in parent1._nodes)
-        {
-            nodes.Add(node.Id, (node, null));
-        }
-        foreach (var node in parent2._nodes)
-        {
-            if (!nodes.ContainsKey(node.Id))
-            {
-                nodes.Add(node.Id, (null, node));
-            }
-            else
-            {
-                nodes[node.Id] = (nodes[node.Id].Item1, node);
-            }
-        }
-        // iterate over all nodes
-        // if both parents have the node add it to the child
-        // if only one parent has the node, add from the parent with the higher fitness
-        // if neither parent has the node, skip it
-        foreach (var (id, (node1, node2)) in nodes)
-        {
-            var node1Copy = node1?.Copy();
-            var node2Copy = node2?.Copy();
-            if (node1 != null && node2 != null)
-            {
-                // they are the same, just add one of them
-                _nodes.Add(node1Copy);
-                if (node1Copy.Type == NodeType.Input)
-                {
-                    _inputs.Add(node1Copy);
-                }
-                else if (node1Copy.Type == NodeType.Output)
-                {
-                    _outputs.Add(node1Copy);
-                }
-            }
-            else if (node1 != null)
-            {
-                if (parent1Fitness > parent2Fitness || (parent1Fitness == parent2Fitness && Random.value < 0.5f))
-                {
-                    _nodes.Add(node1Copy);
-                    if (node1Copy.Type == NodeType.Input)
-                    {
-                        _inputs.Add(node1Copy);
-                    }
-                    else if (node1Copy.Type == NodeType.Output)
-                    {
-                        _outputs.Add(node1Copy);
-                    }
-                }
-            }
-            else if (node2 != null)
-            {
-                if (parent2Fitness > parent1Fitness || (parent1Fitness == parent2Fitness && Random.value >= 0.5f))
-                {
-                    _nodes.Add(node2Copy);
-                    if (node2Copy.Type == NodeType.Input)
-                    {
-                        _inputs.Add(node2Copy);
-                    }
-                    else if (node2Copy.Type == NodeType.Output)
-                    {
-                        _outputs.Add(node2Copy);
-                    }
-                }
-            }
-        }
-    }
 
-    private void InheritConnections(Neat parent1, Neat parent2)
+    private void InheritGenes(Neat parent1, Neat parent2)
     {
-        var parent1Fitness = parent1._fitness;
-        var parent2Fitness = parent2._fitness;
-        // compile all connections from both parents
+        // Ensure all input and output nodes from both parents are inherited
+        foreach (var node in parent1._nodes.Concat(parent2._nodes))
+        {
+            if (node.Type == NodeType.Input || node.Type == NodeType.Output)
+            {
+                GetOrCreate(node.Id, node.Type);
+            }
+        }
+        // Compile all connections from both parents
         // id: (parent1Connection|null, parent2Connection|null)
         var connections = new Dictionary<int, (Connection, Connection)>();
         foreach (var connection in parent1._connections)
@@ -328,42 +246,82 @@ public class Neat
                 connections[connection.Id] = (connections[connection.Id].Item1, connection);
             }
         }
-        // iterate over all connections
-        // if both parents have the connection with same Id, choose one randomly, they may have different weights
-        // if only one parent has the connection, add from the parent with the higher fitness
-        // if neither parent has the connection, skip it
-        foreach (var (id, (connection1, connection2)) in connections)
+        foreach (var connection in connections)
         {
-            if (connection1 != null && connection2 != null)
+            Connection connectionToAdd = null;
+            if (connection.Value.Item1 != null && connection.Value.Item2 != null)
             {
+                // both parents have the connection, add a random of the two to the child
                 if (Random.value < 0.5f)
                 {
-                    var connection1Copy = connection1.Copy(_nodes);
-                    _connections.Add(connection1Copy);
+                    connectionToAdd = connection.Value.Item1;
                 }
                 else
                 {
-                    var connection2Copy = connection2.Copy(_nodes);
-                    _connections.Add(connection2Copy);
+                    connectionToAdd = connection.Value.Item2;
                 }
             }
-            else if (connection1 != null)
+            else if (connection.Value.Item1 != null)
             {
-                if (parent1Fitness > parent2Fitness)
+                // disjoint or excess connection of parent 1
+                // add it if parent 1 has higher fitness or if they are equal and random is less than 0.5
+                if (parent1._fitness > parent2._fitness || (parent1._fitness == parent2._fitness && Random.value < 0.5f))
                 {
-                    var connection1Copy = connection1.Copy(_nodes);
-                    _connections.Add(connection1Copy);
+                    connectionToAdd = connection.Value.Item1;
                 }
             }
-            else if (connection2 != null)
+            else if (connection.Value.Item2 != null)
             {
-                if (parent2Fitness > parent1Fitness)
+                // disjoint or excess connection of parent 2
+                // add it if parent 2 has higher fitness or if they are equal and random is less than 0.5
+                if (parent2._fitness > parent1._fitness || (parent1._fitness == parent2._fitness && Random.value < 0.5f))
                 {
-                    var connection2Copy = connection2.Copy(_nodes);
-                    _connections.Add(connection2Copy);
+                    connectionToAdd = connection.Value.Item2;
                 }
+            }
+            else
+            {
+                // neither parent has the connection, skip it
+                continue;
+            }
+            if (connectionToAdd == null)
+            {
+                continue;
+            }
+            InheritConnection(connectionToAdd);
+        }
+    }
+
+    private Node GetOrCreate(int nodeId, NodeType nodeType)
+    {
+        var node = _nodes.Find(n => n.Id == nodeId);
+        if (node == null)
+        {
+            node = new Node(nodeType, nodeId);
+            _nodes.Add(node);
+            if (nodeType == NodeType.Input)
+            {
+                _inputs.Add(node);
+            }
+            else if (nodeType == NodeType.Output)
+            {
+                _outputs.Add(node);
             }
         }
+        return node;
+    }
+
+    private void InheritConnection(Connection connection)
+    {
+        var fromNode = GetOrCreate(connection.FromNode.Id, connection.FromNode.Type);
+        var toNode = GetOrCreate(connection.ToNode.Id, connection.ToNode.Type);
+        var newConnection = new Connection(fromNode, toNode, connection.Weight, connection.Id);
+        newConnection.Enabled = connection.Enabled;
+        newConnection.FromNode = fromNode;
+        newConnection.ToNode = toNode;
+        fromNode.AddOutConnection(newConnection);
+        toNode.AddInConnection(newConnection);
+        _connections.Add(newConnection);
     }
 
     private void Mutate()
@@ -406,17 +364,20 @@ public class Neat
         var newNode = new Node(NodeType.Hidden);
         _nodes.Add(newNode);
 
-        var weight1 = Random.Range(-1.0f, 1.0f);
-        var connection1 = new Connection(connection.FromNode, newNode, weight1);
-        _connections.Add(connection1);
-        connection.FromNode.AddOutConnection(connection1);
-        newNode.AddInConnection(connection1);
+        var FromNode = connection.FromNode;
+        var ToNode = connection.ToNode;
 
-        var weight2 = Random.Range(-1.0f, 1.0f);
-        var connection2 = new Connection(newNode, connection.ToNode, weight2);
-        _connections.Add(connection2);
-        newNode.AddOutConnection(connection2);
-        connection.ToNode.AddInConnection(connection2);
+        var weightFrom = Random.Range(-1.0f, 1.0f);
+        var connectionFrom = new Connection(FromNode, newNode, weightFrom);
+        _connections.Add(connectionFrom);
+        FromNode.AddOutConnection(connectionFrom);
+        newNode.AddInConnection(connectionFrom);
+
+        var weightTo = Random.Range(-1.0f, 1.0f);
+        var connectionTo = new Connection(newNode, ToNode, weightTo);
+        _connections.Add(connectionTo);
+        newNode.AddOutConnection(connectionTo);
+        ToNode.AddInConnection(connectionTo);
     }
 
     private void MutateAddConnection()
@@ -492,18 +453,65 @@ public class Neat
         System.IO.File.WriteAllText($"SavedSpecimen/{saveName}.json", saveString);
     }
 
-    public static Neat Load(string loadName)
+    public static T Load<T>(string loadName) where T : Neat, new()
     {
         var saveString = System.IO.File.ReadAllText(loadName);
         var saveData = JsonConvert.DeserializeObject<NeatData>(saveString);
 
-        var neat = new Neat(saveData);
+        var neat = new T();
+        neat.InitializeFromData(saveData); // Add a method to initialize from NeatData
         return neat;
     }
 
-    public void SetPoleAngle(float angle)
+    private void InitializeFromData(NeatData data)
     {
-        _poleAngleSum += angle;
+        var nodeIdMax = 0;
+        var connectionIdMax = 0;
+        foreach (var nodeData in data.nodes)
+        {
+            var nodeType = Enum.TryParse<NodeType>(nodeData["type"].ToString(), out var parsedNodeType) ? parsedNodeType : NodeType.Hidden;
+            var function = ActivationFunction.GetActivationFunction(nodeData["function"].ToString());
+            var id = int.Parse(nodeData["id"].ToString());
+            if (id > nodeIdMax)
+            {
+                nodeIdMax = id;
+            }
+            var newNode = new Node(nodeType, id)
+            {
+                ActivationFunction = function
+            };
+            _nodes.Add(newNode);
+            if (nodeType == NodeType.Input)
+            {
+                _inputs.Add(newNode);
+            }
+            else if (nodeType == NodeType.Output)
+            {
+                _outputs.Add(newNode);
+            }
+        }
+        foreach (var connectionData in data.connections)
+        {
+            var fromID = int.Parse(connectionData["from"].ToString());
+            var toID = int.Parse(connectionData["to"].ToString());
+            var fromNode = _nodes.Find(n => n.Id == fromID);
+            var toNode = _nodes.Find(n => n.Id == toID);
+            var id = int.Parse(connectionData["id"].ToString());
+            if (id > connectionIdMax)
+            {
+                connectionIdMax = id;
+            }
+            var weight = float.Parse(connectionData["weight"].ToString());
+            var connection = new Connection(fromNode, toNode, weight, id)
+            {
+                Enabled = (bool)connectionData["enabled"]
+            };
+            _connections.Add(connection);
+            fromNode.AddOutConnection(connection);
+            toNode.AddInConnection(connection);
+        }
+        Sequencer.Instance.SetNodeIdMax(nodeIdMax + 1);
+        Sequencer.Instance.SetConnectionIdMax(connectionIdMax + 1);
     }
 
     private void ResetVisits()
@@ -512,5 +520,15 @@ public class Neat
         {
             node.ResetVisits();
         }
+    }
+
+    public virtual void Reset()
+    {
+        foreach (var node in _nodes)
+        {
+            node.ResetVisits();
+        }
+        _isDead = false;
+        _fitness = 0;
     }
 }
