@@ -209,14 +209,10 @@ public class Neat
         return orphanedNodes.Count > 0;
     }
 
-    public Neat Crossover(Neat other)
+    public T Crossover<T>(Neat other) where T : Neat, new()
     {
-        var child = new Neat();
+        var child = new T();
         child.InheritGenes(this, other);
-        if (child.CheckOrphanedNodes())
-        {
-            Debug.Log("Orphaned nodes detected after InheritGenes, Debug it");
-        }
         child.Mutate();
         return child;
     }
@@ -286,6 +282,10 @@ public class Neat
             else
             {
                 // neither parent has the connection, skip it
+                continue;
+            }
+            if (connectionToAdd == null)
+            {
                 continue;
             }
             InheritConnection(connectionToAdd);

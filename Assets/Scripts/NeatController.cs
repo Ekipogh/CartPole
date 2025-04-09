@@ -290,13 +290,13 @@ public class CartNeatController : MonoBehaviour
             // Crossover between the best specimens
             var parent1 = champions[j % _championSize];
             var parent2 = champions[(j + 1) % _championSize];
-            var child = parent1.Crossover(parent2);
+            var child = parent1.Crossover<CartNeat>(parent2);
             var cartAndPole = InstantiateCartAndPole(i);
             // Randomize the initial rotation of the pole
             cartAndPole.pole.transform.rotation = RandomizeRotation();
             // set the cart number to the best specimen index
             cartAndPole.cart.SetNumber(i);
-            newGeneration.Add((CartNeat)child, cartAndPole);
+            newGeneration.Add(child, cartAndPole);
             j++;
         }
         // reset the champions
