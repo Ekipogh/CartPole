@@ -7,32 +7,64 @@ import numpy as np
 from scipy.stats import linregress
 from scipy.signal import find_peaks
 from jinja2 import Environment, FileSystemLoader
-from jinja2 import Template
+
+
+def parse_generation(output):
+    """
+    Parse the generation number from the Unity app output.
+    Best fitness of generation 1: 77.20252
+    """
+    if "Best fitness of generation" in output:
+        try:
+            generation = int(output.split(":")[0].split(" ")[-1])
+            return generation
+        except ValueError:
+            return None
+    return None
 
 
 def run_unity_app(population_size, generations):
     """
     Run the Unity app with the specified population size and generations.
     """
+    current_generation = -1
+
     unity_app_path = os.path.join("CartPole", "CartPole.exe")
+    additianl_args = ["-logFile", "-"]
     if not os.path.exists(unity_app_path):
         print(f"Unity app not found at {unity_app_path}.")
         return
-
+    command_line = [
+        unity_app_path, f"-populationSize={population_size}", f"-maxGenerations={generations}"]
+    command_line.extend(additianl_args)
     try:
         proc = subprocess.Popen(
-            [unity_app_path, f"-populationSize={population_size}", f"-maxGenerations={generations}"])
-        proc.wait()  # Wait for the process to complete
-        if proc.returncode != 0:
-            print(f"Unity app exited with code {proc.returncode}.")
-        else:
-            print("Unity app ran successfully.")
-    except FileNotFoundError:
-        print(f"Unity app executable not found at {unity_app_path}.")
-    except subprocess.CalledProcessError as e:
-        print(f"Error running Unity app: {e}")
+            command_line,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            universal_newlines=True,
+            shell=True,
+        )
+        while True:
+            output = proc.stdout.readline()
+            if output == "" and proc.poll() is not None:
+                break
+            if output:
+                parsed_generation = parse_generation(output)
+                if parsed_generation is not None:
+                    current_generation = parsed_generation
+                    print(f"Current generation: {current_generation}")
+                progress = int(
+                    ((current_generation + 1) / generations) * 100)
+                print(f"##teamcity [progressMessage 'Progress: {progress}%']")
+                print(f"##teamcity [progressUpdate {progress}]")
+        proc.stdout.close()
+        return_code = proc.wait()
+        if return_code != 0:
+            print(f"Unity app exited with code {return_code}.")
     except Exception as e:
-        print(f"Failed to start Unity app: {e}")
+        print(f"Error running Unity app: {e}")
+        return_code = -1
 
 
 def run_test():
