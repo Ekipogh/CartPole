@@ -30,13 +30,13 @@ def run_unity_app(population_size, generations):
     current_generation = -1
 
     unity_app_path = os.path.join("CartPole", "CartPole.exe")
-    additianl_args = ["-logFile", "-"]
+    additional_arguments = ["-logFile", "-"]
     if not os.path.exists(unity_app_path):
         print(f"Unity app not found at {unity_app_path}.")
         return
     command_line = [
         unity_app_path, f"-populationSize={population_size}", f"-maxGenerations={generations}"]
-    command_line.extend(additianl_args)
+    command_line.extend(additional_arguments)
     try:
         proc = subprocess.Popen(
             command_line,

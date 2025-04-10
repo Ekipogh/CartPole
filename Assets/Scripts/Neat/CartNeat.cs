@@ -35,6 +35,10 @@ class CartNeat : Neat
 
     public override float CalculateFitness()
     {
+        if (_frames == 0)
+        {
+            return 0; // Avoid division by zero
+        }
         // Normalize pole straightness (1 = perfectly upright, 0 = completely horizontal)
         var poleStraightness = CalculatePoleStraightness();
 
