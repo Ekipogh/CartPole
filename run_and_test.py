@@ -67,10 +67,11 @@ def run_unity_app(population_size, generations):
 
 
 def run_test():
+    max_fitness = 0
     training_history_path = os.path.join(
         "SavedSpecimen", "training_history.json")
     if not os.path.exists(training_history_path):
-        print(f"Best specimen JSON file not found at {training_history_path}.")
+        print(f"Training history file not found at {training_history_path}.")
         return
     report_data = {}
     # find top fitness
@@ -79,6 +80,8 @@ def run_test():
         training_history_data = json.load(f)
         # analyze best specimen
         best_fitness_list = get_best_fitness_list(training_history_data)
+        max_of_best_fitness = max(best_fitness_list)
+        max_fitness = max(max_fitness, max_of_best_fitness)
         report_data["fitness_data"] = best_fitness_list
         report_data["generation_labels"] = list(range(len(best_fitness_list)))
         report_best = analyze_data(best_fitness_list)
@@ -115,6 +118,10 @@ def run_test():
         with open(report_json_path, "w") as f:
             json.dump(report_data, f, indent=4)
         print(f"Report data saved to {report_json_path}.")
+        print(
+            f"##temacity[buildStatus text='Run completed. Max fitness: {max_fitness}']")
+        print(
+            f"##teamcity[buildStatisticValue key='MaxFitness' value='{max_fitness}']")
         return report_data
 
 
