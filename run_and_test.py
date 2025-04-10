@@ -119,7 +119,7 @@ def run_test():
             json.dump(report_data, f, indent=4)
         print(f"Report data saved to {report_json_path}.")
         print(
-            f"##temacity[buildStatus text='Run completed. Max fitness: {max_fitness}']")
+            f"##teamcity[buildStatus text='Run completed. Max fitness: {max_fitness}']")
         print(
             f"##teamcity[buildStatisticValue key='MaxFitness' value='{max_fitness}']")
         return report_data
