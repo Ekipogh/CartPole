@@ -1,9 +1,14 @@
 using UnityEngine;
 using Newtonsoft.Json;
+using UnityEngine.AI;
+using System;
 
 class CartNeat : Neat
 {
+    private int _id;
     private long _frames = 0;
+
+    private float _distance = 0;
 
     private float _poleAngleSum;
 
@@ -30,14 +35,37 @@ class CartNeat : Neat
 
     public override float CalculateFitness()
     {
-        var pole_straightness = CalculatePoleStraightness();
-        var fitness = _frames / 100.0f * pole_straightness;
-        return fitness;
+        // Normalize pole straightness (1 = perfectly upright, 0 = completely horizontal)
+        var poleStraightness = CalculatePoleStraightness();
+
+        // Reward time alive (frames)
+        var timeReward = _frames / 100.0f;
+
+        // Penalize excessive cart movement (distance)
+        var movementPenalty = _distance * 0.1f; // Adjust weight as needed
+
+        // Penalize large pole angles
+        var anglePenalty = Mathf.Abs(_poleAngleSum / _frames) * 0.05f; // Adjust weight as needed
+
+        // Combine metrics into a single fitness score
+        var fitness = timeReward * poleStraightness - movementPenalty - anglePenalty;
+
+        // Ensure fitness is non-negative
+        return Mathf.Max(fitness, 0);
     }
 
     public override void Update()
     {
         _frames++;
+    }
+
+    public void UpdateDistance(float distance)
+    {
+        var absDistance = Math.Abs(distance);
+        if (absDistance > _distance)
+        {
+            _distance = absDistance;
+        }
     }
 
     public void SetPoleAngle(float angle)
@@ -50,5 +78,11 @@ class CartNeat : Neat
         base.Reset();
         _frames = 0;
         _poleAngleSum = 0;
+    }
+
+    public int Id
+    {
+        get { return _id; }
+        set { _id = value; }
     }
 }

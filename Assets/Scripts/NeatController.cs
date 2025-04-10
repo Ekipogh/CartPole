@@ -97,7 +97,10 @@ public class CartNeatController : MonoBehaviour
         for (int i = bestSpecimenLoaded ? 1 : 0; i < _populationSize; i++)
         {
             // Create a new NEAT specimen
-            var newSpecimen = new CartNeat(_inputSize, _outputSize);
+            var newSpecimen = new CartNeat(_inputSize, _outputSize)
+            {
+                Id = i // Assign a unique ID to the specimen
+            };
 
             var cartAndPole = InstantiateCartAndPole(i);
 
@@ -220,6 +223,7 @@ public class CartNeatController : MonoBehaviour
                 cart.moveAmount += Mathf.Abs(move);
                 cart.Move(new Vector2(move, 0));
                 specimen.SetPoleAngle(angle);
+                specimen.UpdateDistance(cartX);
             }
             else
             {
@@ -271,6 +275,7 @@ public class CartNeatController : MonoBehaviour
             // set the cart number to the best specimen index
             cartAndPole.cart.SetNumber(i);
             champions[i].IsDead = false; // reset the dead state of the specimen
+            champions[i].Id = i; // set the ID to the index of the specimen
             newGeneration.Add(champions[i], cartAndPole);
         }
         for (int i = _championSize; i < _championSize + _antichampionSize; i++)
@@ -282,6 +287,7 @@ public class CartNeatController : MonoBehaviour
             // set the cart number to the best specimen index
             cartAndPole.cart.SetNumber(i);
             antichampions[i - _championSize].IsDead = false; // reset the dead state of the specimen
+            antichampions[i - _championSize].Id = i; // set the ID to the index of the specimen
             newGeneration.Add(antichampions[i - _championSize], cartAndPole);
         }
         int j = 0;
@@ -291,6 +297,7 @@ public class CartNeatController : MonoBehaviour
             var parent1 = champions[j % _championSize];
             var parent2 = champions[(j + 1) % _championSize];
             var child = parent1.Crossover<CartNeat>(parent2);
+            child.Id = i; // set the ID to the index of the specimen
             var cartAndPole = InstantiateCartAndPole(i);
             // Randomize the initial rotation of the pole
             cartAndPole.pole.transform.rotation = RandomizeRotation();
@@ -350,6 +357,7 @@ public class CartNeatController : MonoBehaviour
         statisticsSO.SetAverageFitness(averageFitness);
         statisticsSO.AttemptToSetMaxFitness(maxFitness);
         statisticsSO.SetLastSpecimenFitness(_deadSpecimens.Last().Fitness);
+        statisticsSO.SetCurrentPopulation(_currentGeneration.Count);
     }
 
     private void ResetStatistics()
@@ -363,6 +371,7 @@ public class CartNeatController : MonoBehaviour
         if (System.IO.File.Exists(bestFilePath))
         {
             CartNeat best = Neat.Load<CartNeat>(bestFilePath);
+            best.Id = 0; // Set the ID to 0 for the loaded specimen
             var cartAndPole = InstantiateCartAndPole(0);
             // Randomize the initial rotation of the pole
             var poleRotation = RandomizeRotation();
@@ -411,7 +420,8 @@ public class CartNeatController : MonoBehaviour
     private void UpdateHistory()
     {
         // update the training history with the current generation fitnesses
-        var fitnesses = _deadSpecimens.Select(x => x.Fitness).ToList();
+        var _specimenSortedById = _deadSpecimens.OrderBy(x => x.Id).ToList();
+        var fitnesses = _specimenSortedById.Select(x => x.Fitness).ToList();
         // save the best fitness of the current generation
         var bestFitness = fitnesses.Max();
         _trainingHistory.Add(fitnesses);
