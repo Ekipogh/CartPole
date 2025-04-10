@@ -475,8 +475,8 @@ public class CartNeatController : MonoBehaviour
     private void UpdateHistory()
     {
         // update the training history with the current generation fitnesses
-        var _specimenSortedById = _deadSpecimens.OrderBy(x => x.Id).ToList();
-        var fitnesses = _specimenSortedById.Select(x => x.Fitness).ToList();
+        var specimenSortedById = _deadSpecimens.OrderBy(x => x.Id).ToList();
+        var fitnesses = specimenSortedById.Select(x => x.Fitness).ToList();
         // save the best fitness of the current generation
         var bestFitness = fitnesses.Max();
         Console.WriteLine($"Best fitness of generation {_currentGenerationIndex}: {bestFitness}");
