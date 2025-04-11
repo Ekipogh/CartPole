@@ -44,7 +44,7 @@ public class StatisticsSO : ScriptableObject
     {
         generation = 0;
         averageFitness = 0;
-        bestFitness = 0;
+        bestFitness = float.MinValue;
         lastSpecimenFitness = 0;
     }
 
