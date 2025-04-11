@@ -1,6 +1,4 @@
 using UnityEngine;
-using Newtonsoft.Json;
-using UnityEngine.AI;
 using System;
 
 class CartNeat : Neat
@@ -54,8 +52,7 @@ class CartNeat : Neat
         // Combine metrics into a single fitness score
         var fitness = timeReward * poleStraightness - movementPenalty - anglePenalty;
 
-        // Ensure fitness is non-negative
-        return Mathf.Max(fitness, 0);
+        return fitness;
     }
 
     public override void Update()
