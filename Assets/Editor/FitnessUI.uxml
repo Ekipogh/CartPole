@@ -50,4 +50,9 @@
             <ui:DataBinding property="value" binding-mode="ToTarget" />
         </Bindings>
     </ui:FloatField>
+    <ui:FloatField label="Current Population" value="42.2" data-source="project://database/Assets/ScriptableObjects/StatisticsSO.asset?fileID=11400000&amp;guid=73c9fc7eb0bb60549aed93559fb84380&amp;type=2#StatisticsSO" data-source-path="currentPopulation" name="CurrentPopulation" style="width: 233px;">
+        <Bindings>
+            <ui:DataBinding property="value" binding-mode="ToTarget" />
+        </Bindings>
+    </ui:FloatField>
 </ui:UXML>

@@ -1,11 +1,8 @@
-using Unity.VisualScripting;
 using UnityEngine;
-using UnityEngine.InputSystem;
 using TMPro;
 
 public class Cart : MonoBehaviour
 {
-    public InputActionAsset inputActions;
     public Rigidbody2D rb;
 
     public float moveAmount = 0;

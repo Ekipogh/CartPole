@@ -35,10 +35,10 @@ public class Neat
     private List<Connection> _connections;
     private float _fitness = 0;
     public float Fitness { get { return _fitness; } }
-    private const float _addNodeMutationRate = 0.1f;
-    private const float _addConnectionMutationRate = 0.1f;
+    private const float _addNodeMutationRate = 0.3f;
+    private const float _addConnectionMutationRate = 0.3f;
     private const float _weightMutationRate = 0.8f;
-    private const float _enableDisableMutationRate = 0.1f;
+    private const float _enableDisableMutationRate = 0.3f;
 
     private bool _isDead = false;
     public bool IsDead

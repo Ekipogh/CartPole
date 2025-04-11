@@ -7,39 +7,70 @@ import numpy as np
 from scipy.stats import linregress
 from scipy.signal import find_peaks
 from jinja2 import Environment, FileSystemLoader
-from jinja2 import Template
+
+
+def parse_generation(output):
+    """
+    Parse the generation number from the Unity app output.
+    Best fitness of generation 1: 77.20252
+    """
+    if "Best fitness of generation" in output:
+        try:
+            generation = int(output.split(":")[0].split(" ")[-1])
+            return generation
+        except ValueError:
+            return None
+    return None
 
 
 def run_unity_app(population_size, generations):
     """
     Run the Unity app with the specified population size and generations.
     """
+    current_generation = -1
+
     unity_app_path = os.path.join("CartPole", "CartPole.exe")
+    additional_arguments = ["-logFile", "-"]
     if not os.path.exists(unity_app_path):
         print(f"Unity app not found at {unity_app_path}.")
         return
-
+    command_line = [
+        unity_app_path, f"-populationSize={population_size}", f"-maxGenerations={generations}"]
+    command_line.extend(additional_arguments)
     try:
         proc = subprocess.Popen(
-            [unity_app_path, f"-populationSize={population_size}", f"-maxGenerations={generations}"])
-        proc.wait()  # Wait for the process to complete
-        if proc.returncode != 0:
-            print(f"Unity app exited with code {proc.returncode}.")
-        else:
-            print("Unity app ran successfully.")
-    except FileNotFoundError:
-        print(f"Unity app executable not found at {unity_app_path}.")
-    except subprocess.CalledProcessError as e:
-        print(f"Error running Unity app: {e}")
+            command_line,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            universal_newlines=True,
+            shell=True,
+        )
+        while True:
+            output = proc.stdout.readline()
+            if output == "" and proc.poll() is not None:
+                break
+            if output:
+                parsed_generation = parse_generation(output)
+                if parsed_generation is not None:
+                    current_generation = parsed_generation
+                    print(f"Current generation: {current_generation}")
+                progress = int(((current_generation + 1) / generations) * 100)
+                print(f"##teamcity[progressMessage 'Progress: {progress}%']")
+        proc.stdout.close()
+        return_code = proc.wait()
+        if return_code != 0:
+            print(f"Unity app exited with code {return_code}.")
     except Exception as e:
-        print(f"Failed to start Unity app: {e}")
+        print(f"Error running Unity app: {e}")
+        return_code = -1
 
 
 def run_test():
+    max_fitness = 0
     training_history_path = os.path.join(
         "SavedSpecimen", "training_history.json")
     if not os.path.exists(training_history_path):
-        print(f"Best specimen JSON file not found at {training_history_path}.")
+        print(f"Training history file not found at {training_history_path}.")
         return
     report_data = {}
     # find top fitness
@@ -48,6 +79,8 @@ def run_test():
         training_history_data = json.load(f)
         # analyze best specimen
         best_fitness_list = get_best_fitness_list(training_history_data)
+        max_of_best_fitness = max(best_fitness_list)
+        max_fitness = max(max_fitness, max_of_best_fitness)
         report_data["fitness_data"] = best_fitness_list
         report_data["generation_labels"] = list(range(len(best_fitness_list)))
         report_best = analyze_data(best_fitness_list)
@@ -84,6 +117,10 @@ def run_test():
         with open(report_json_path, "w") as f:
             json.dump(report_data, f, indent=4)
         print(f"Report data saved to {report_json_path}.")
+        print(
+            f"##teamcity[buildStatus text='Run completed. Max fitness: {max_fitness}']")
+        print(
+            f"##teamcity[buildStatisticValue key='MaxFitness' value='{max_fitness}']")
         return report_data
 
 
