@@ -56,7 +56,6 @@ def run_unity_app(population_size, generations):
                     print(f"Current generation: {current_generation}")
                 progress = int(((current_generation + 1) / generations) * 100)
                 print(f"##teamcity[progressMessage 'Progress: {progress}%']")
-                print(f"##teamcity[progress {progress}]")
         proc.stdout.close()
         return_code = proc.wait()
         if return_code != 0:
