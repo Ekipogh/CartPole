@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>Training history chart</title>
+    </head>
+    <body>
+        <canvas id="myChart" width="400" height="200"></canvas>
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+        <button onclick="window.location.href='/'" id="toggle">Select/Unselect all</button>
+        <script>
+            const ctx = document.getElementById('myChart').getContext('2d');
+            const myChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: {{ chart_data.labels }}, // Replace with an array of generation labels
+                    datasets: [
+                        {% for fitness_list in chart_data.fitness_data %}
+                        {
+                            label: 'Generation {{ loop.index }}',
+                            data: {{ fitness_list|tojson }},
+                            borderColor: `rgba(${Math.floor(Math.random() * 256)}, ${Math.floor(Math.random() * 256)}, ${Math.floor(Math.random() * 256)}, 1)`,
+                            borderWidth: 2,
+                            fill: false
+                        },
+                        {% endfor %}
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'right'
+                        }
+                    },
+                    scales: {
+                        x: {
+                            beginAtZero: true
+                        },
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+
+            $(document).ready(function() {
+                $('#toggle').click(function() {
+                    const chart = myChart;
+                    chart.data.datasets.forEach((dataset) => {
+                        dataset.hidden = !dataset.hidden;
+                    });
+                    chart.update();
+                });
+            });
+        </script>
+    </body>
+</html>
