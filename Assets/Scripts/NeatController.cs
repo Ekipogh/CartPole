@@ -3,6 +3,8 @@ using UnityEngine;
 using System.Linq;
 using Newtonsoft.Json;
 using UnityEditor;
+using System;
+using Random = UnityEngine.Random;
 
 public class CartNeatController : MonoBehaviour
 {
@@ -22,6 +24,7 @@ public class CartNeatController : MonoBehaviour
 
     private const int _championSize = 5; // number of specimens that will be preserved in the next generation
     private const int _antichampionSize = 1; // number of worst specimens that will be saved in the next generation
+    private const int _newSpeciesSize = 5; // number of new species re-introduced in the next generation
 
     private CartNeat absoluteBestSpecimen = null; // the best specimen of all generations
 
@@ -97,7 +100,10 @@ public class CartNeatController : MonoBehaviour
         for (int i = bestSpecimenLoaded ? 1 : 0; i < _populationSize; i++)
         {
             // Create a new NEAT specimen
-            var newSpecimen = new CartNeat(_inputSize, _outputSize);
+            var newSpecimen = new CartNeat(_inputSize, _outputSize)
+            {
+                Id = i // Assign a unique ID to the specimen
+            };
 
             var cartAndPole = InstantiateCartAndPole(i);
 
@@ -220,6 +226,7 @@ public class CartNeatController : MonoBehaviour
                 cart.moveAmount += Mathf.Abs(move);
                 cart.Move(new Vector2(move, 0));
                 specimen.SetPoleAngle(angle);
+                specimen.UpdateDistance(cartX);
             }
             else
             {
@@ -244,75 +251,130 @@ public class CartNeatController : MonoBehaviour
 
     public void Evolution()
     {
-        // sort dead specimens by fitness
+        // Sort dead specimens by fitness (descending order)
         _deadSpecimens.Sort((x, y) => y.Fitness.CompareTo(x.Fitness));
-        // update the absolute best specimen
-        if (absoluteBestSpecimen == null || _deadSpecimens.First().Fitness > absoluteBestSpecimen.Fitness)
-        {
-            absoluteBestSpecimen = _deadSpecimens.First();
-        }
-        // save the best and the worst specimens
-        if (_deadSpecimens.Count > 0)
-        {
-            var bestFileName = $"generation_{_currentGenerationIndex}_best";
-            var worstFileName = $"generation_{_currentGenerationIndex}_worst";
-            _deadSpecimens.First().Save(bestFileName);
-            _deadSpecimens.Last().Save(worstFileName);
-        }
+
+        // Update the absolute best specimen
+        UpdateAbsoluteBestSpecimen();
+
+        // Save the best specimen of the current generation
+        SaveBestSpecimen();
+
+        // Create a new generation
         var newGeneration = new Dictionary<CartNeat, CartAndPole>();
-        List<CartNeat> champions = _deadSpecimens.GetRange(0, _championSize); // first _championSize specimens are the best ones
-        List<CartNeat> antichampions = _deadSpecimens.GetRange(_deadSpecimens.Count - _antichampionSize, _antichampionSize); // last _antichampionSize specimens are the worst ones
-        for (int i = 0; i < _championSize; i++)
-        {
-            CartAndPole cartAndPole = InstantiateCartAndPole(i);
-            // Randomize the initial rotation of the pole
-            var poleRotation = RandomizeRotation();
-            cartAndPole.pole.transform.rotation = poleRotation;
-            // set the cart number to the best specimen index
-            cartAndPole.cart.SetNumber(i);
-            champions[i].IsDead = false; // reset the dead state of the specimen
-            newGeneration.Add(champions[i], cartAndPole);
-        }
-        for (int i = _championSize; i < _championSize + _antichampionSize; i++)
-        {
-            var cartAndPole = InstantiateCartAndPole(i);
-            // Randomize the initial rotation of the pole
-            var poleRotation = RandomizeRotation();
-            cartAndPole.pole.transform.rotation = poleRotation;
-            // set the cart number to the best specimen index
-            cartAndPole.cart.SetNumber(i);
-            antichampions[i - _championSize].IsDead = false; // reset the dead state of the specimen
-            newGeneration.Add(antichampions[i - _championSize], cartAndPole);
-        }
-        int j = 0;
-        for (int i = _championSize + _antichampionSize; i < _populationSize; i++)
-        {
-            // Crossover between the best specimens
-            var parent1 = champions[j % _championSize];
-            var parent2 = champions[(j + 1) % _championSize];
-            var child = parent1.Crossover<CartNeat>(parent2);
-            var cartAndPole = InstantiateCartAndPole(i);
-            // Randomize the initial rotation of the pole
-            cartAndPole.pole.transform.rotation = RandomizeRotation();
-            // set the cart number to the best specimen index
-            cartAndPole.cart.SetNumber(i);
-            newGeneration.Add(child, cartAndPole);
-            j++;
-        }
-        // reset the champions
-        foreach (var specimen in champions)
-        {
-            specimen.Reset();
-        }
-        // reset the antichampions
-        foreach (var specimen in antichampions)
-        {
-            specimen.Reset();
-        }
+
+        // Add champions to the new generation
+        AddSpecimensToNewGeneration(newGeneration, _deadSpecimens.Take(_championSize).ToList(), 0);
+
+        // Add antichampions to the new generation
+        AddSpecimensToNewGeneration(newGeneration, _deadSpecimens.Skip(_deadSpecimens.Count - _antichampionSize).ToList(), _championSize);
+
+        // Add new species to the new generation
+        AddNewSpeciesToGeneration(newGeneration);
+
+        // Add offspring from crossover to the new generation
+        AddOffspringToGeneration(newGeneration);
+
+        // Reset champions and antichampions
+        ResetSpecimens(_deadSpecimens.Take(_championSize).ToList());
+        ResetSpecimens(_deadSpecimens.Skip(_deadSpecimens.Count - _antichampionSize).ToList());
+
+        // Update the current generation
         _deadSpecimens.Clear();
         _currentGeneration = newGeneration;
         _currentGenerationIsFinished = false;
         _currentGenerationIndex++;
+    }
+
+    private void UpdateAbsoluteBestSpecimen()
+    {
+        if (absoluteBestSpecimen == null || _deadSpecimens.First().Fitness > absoluteBestSpecimen.Fitness)
+        {
+            absoluteBestSpecimen = _deadSpecimens.First();
+        }
+    }
+
+    private void SaveBestSpecimen()
+    {
+        if (_deadSpecimens.Count > 0)
+        {
+            var bestFileName = $"generation_{_currentGenerationIndex}_best";
+            _deadSpecimens.First().Save(bestFileName);
+        }
+    }
+
+    private void AddSpecimensToNewGeneration(Dictionary<CartNeat, CartAndPole> newGeneration, List<CartNeat> specimens, int startIndex)
+    {
+        for (int i = 0; i < specimens.Count; i++)
+        {
+            var specimen = specimens[i];
+            var cartAndPole = InstantiateCartAndPole(startIndex + i);
+
+            // Randomize the initial rotation of the pole
+            cartAndPole.pole.transform.rotation = RandomizeRotation();
+
+            // Set the cart number and reset the specimen
+            cartAndPole.cart.SetNumber(startIndex + i);
+            specimen.IsDead = false;
+            specimen.Id = startIndex + i;
+
+            newGeneration.Add(specimen, cartAndPole);
+        }
+    }
+
+    private void AddNewSpeciesToGeneration(Dictionary<CartNeat, CartAndPole> newGeneration)
+    {
+        for (int i = 0; i < _newSpeciesSize; i++)
+        {
+            var newSpecimen = new CartNeat(_inputSize, _outputSize)
+            {
+                Id = _championSize + _antichampionSize + i
+            };
+
+            var cartAndPole = InstantiateCartAndPole(newSpecimen.Id);
+
+            // Randomize the initial rotation of the pole
+            cartAndPole.pole.transform.rotation = RandomizeRotation();
+
+            // Set the cart number
+            cartAndPole.cart.SetNumber(newSpecimen.Id);
+
+            newGeneration.Add(newSpecimen, cartAndPole);
+        }
+    }
+
+    private void AddOffspringToGeneration(Dictionary<CartNeat, CartAndPole> newGeneration)
+    {
+        int j = 0;
+        for (int i = _championSize + _antichampionSize + _newSpeciesSize; i < _populationSize; i++)
+        {
+            // Select parents for crossover
+            var parent1 = _deadSpecimens[j % _championSize];
+            var parent2 = _deadSpecimens[(j + 1) % _championSize];
+
+            // Perform crossover to create a child
+            var child = parent1.Crossover<CartNeat>(parent2);
+            child.Id = i;
+
+            var cartAndPole = InstantiateCartAndPole(i);
+
+            // Randomize the initial rotation of the pole
+            cartAndPole.pole.transform.rotation = RandomizeRotation();
+
+            // Set the cart number
+            cartAndPole.cart.SetNumber(i);
+
+            newGeneration.Add(child, cartAndPole);
+            j++;
+        }
+    }
+
+    private void ResetSpecimens(List<CartNeat> specimens)
+    {
+        foreach (var specimen in specimens)
+        {
+            specimen.Reset();
+        }
     }
 
     private CartAndPole InstantiateCartAndPole(int i)
@@ -350,6 +412,7 @@ public class CartNeatController : MonoBehaviour
         statisticsSO.SetAverageFitness(averageFitness);
         statisticsSO.AttemptToSetMaxFitness(maxFitness);
         statisticsSO.SetLastSpecimenFitness(_deadSpecimens.Last().Fitness);
+        statisticsSO.SetCurrentPopulation(_currentGeneration.Count);
     }
 
     private void ResetStatistics()
@@ -363,6 +426,7 @@ public class CartNeatController : MonoBehaviour
         if (System.IO.File.Exists(bestFilePath))
         {
             CartNeat best = Neat.Load<CartNeat>(bestFilePath);
+            best.Id = 0; // Set the ID to 0 for the loaded specimen
             var cartAndPole = InstantiateCartAndPole(0);
             // Randomize the initial rotation of the pole
             var poleRotation = RandomizeRotation();
@@ -411,9 +475,11 @@ public class CartNeatController : MonoBehaviour
     private void UpdateHistory()
     {
         // update the training history with the current generation fitnesses
-        var fitnesses = _deadSpecimens.Select(x => x.Fitness).ToList();
+        var specimenSortedById = _deadSpecimens.OrderBy(x => x.Id).ToList();
+        var fitnesses = specimenSortedById.Select(x => x.Fitness).ToList();
         // save the best fitness of the current generation
         var bestFitness = fitnesses.Max();
+        Console.WriteLine($"Best fitness of generation {_currentGenerationIndex}: {bestFitness}");
         _trainingHistory.Add(fitnesses);
     }
 

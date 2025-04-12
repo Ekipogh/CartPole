@@ -8,6 +8,8 @@ public class StatisticsSO : ScriptableObject
     public float bestFitness = 0;
     public float lastSpecimenFitness = 0;
 
+    public int currentPopulation = 0;
+
     public void SetGeneration(int generation)
     {
         this.generation = generation;
@@ -33,11 +35,16 @@ public class StatisticsSO : ScriptableObject
         }
     }
 
+    public void SetCurrentPopulation(int currentPopulation)
+    {
+        this.currentPopulation = currentPopulation;
+    }
+
     public void ResetStatistics()
     {
         generation = 0;
         averageFitness = 0;
-        bestFitness = 0;
+        bestFitness = float.MinValue;
         lastSpecimenFitness = 0;
     }
 

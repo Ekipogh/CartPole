@@ -9,7 +9,7 @@ if __name__ == "__main__":
         print("Error: SavedSpecimens directory does not exist.")
         print("Run the CartPole experiment first.")
         exit(1)
-    best_fitness = -1
+    best_fitness = float("-inf")
     for file in os.listdir(saved_specimen_directory):
         if file.endswith("_best.json") and file != "best.json":
             with open(saved_specimen_directory + "/" + file, "r") as f:
