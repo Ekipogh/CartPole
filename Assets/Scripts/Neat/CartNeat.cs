@@ -59,8 +59,10 @@ class CartNeat : Neat
         // Penalize large pole angles
         var anglePenalty = Mathf.Abs(_poleAngleSum / _frames) * _anglePenaltyModifier;
 
+        var penalty = movementPenalty + anglePenalty;
+
         // Combine metrics into a single fitness score
-        var fitness = timeReward * poleStraightness - movementPenalty - anglePenalty;
+        var fitness = timeReward * poleStraightness / (penalty + 1); // Add 1 to avoid division by zero
 
         return fitness;
     }
